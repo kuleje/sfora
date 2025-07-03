@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pairwise Task Sorter</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <h1>Pairwise Task Sorter</h1>
+        <div id="status-log" style="background-color: #eee; border: 1px solid #ccc; padding: 10px; margin-bottom: 1rem; text-align: left;"><strong>Status:</strong> Waiting for user...</div>
+        
+        <div id="setup-area">
+            <p>1. Select your CSV file</p>
+            <input type="file" id="csv-file" accept=".csv">
+            <button id="load-csv-button">2. Load CSV</button>
+        </div>
+
+        <div id="column-selection-area" style="display: none;">
+            <p>Please select columns for your task data:</p>
+            <div class="column-selector">
+                <label for="task-id-column">Task ID:</label>
+                <select id="task-id-column">
+                    <option value="">Select column...</option>
+                </select>
+                <span class="column-preview" id="task-id-preview"></span>
+            </div>
+            <div class="column-selector">
+                <label for="task-name-column">Task Name:</label>
+                <select id="task-name-column">
+                    <option value="">Select column...</option>
+                </select>
+                <span class="column-preview" id="task-name-preview"></span>
+            </div>
+            <div class="column-selector">
+                <label for="task-description-column">Task Description:</label>
+                <select id="task-description-column">
+                    <option value="">Select column...</option>
+                </select>
+                <span class="column-preview" id="task-description-preview"></span>
+            </div>
+            <div class="column-selector">
+                <label for="task-url-base">Task URL Base:</label>
+                <input type="text" id="task-url-base" value="https://app.clickup.com/t/4540126/" placeholder="https://app.clickup.com/t/your-workspace-id/">
+                <span class="column-preview">Base URL for generating task links from IDs</span>
+            </div>
+            <button id="start-sorting-button">Start Sorting</button>
+        </div>
+
+        <div id="sorting-area" style="display: none;">
+            <h2 id="comparison-title">Which task is more important?</h2>
+            <div id="comparison-area">
+                <div id="task-a" class="task"></div>
+                <div id="task-b" class="task"></div>
+            </div>
+            <div id="qr-codes-area">
+                <div id="qr-a" class="qr-container-bottom"></div>
+                <div id="qr-b" class="qr-container-bottom"></div>
+            </div>
+            <div id="progress-bar-container">
+                <div id="progress-bar"></div>
+            </div>
+            <p id="progress-text"></p>
+            <button id="restart-sorting">Start Over</button>
+        </div>
+
+        <div id="results-area" style="display: none;">
+            <h2>Sorted Tasks</h2>
+            <ol id="sorted-list"></ol>
+            <button id="export-csv">Export as CSV</button>
+            <button id="restart">Start Over</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
