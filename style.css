@@ -129,6 +129,39 @@ button:active {
     hyphens: auto;
 }
 
+.task-comment-section {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+}
+
+.comment-label {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-weight: bold;
+    font-size: 0.85em;
+    color: #666;
+}
+
+.task-comment {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 0.85em;
+    resize: vertical;
+    min-height: 50px;
+    background-color: #fafafa;
+}
+
+.task-comment:focus {
+    outline: none;
+    border-color: #4a90e2;
+    background-color: white;
+    box-shadow: 0 0 0 1px rgba(74, 144, 226, 0.2);
+}
+
 #qr-codes-area {
     display: flex;
     justify-content: space-between;

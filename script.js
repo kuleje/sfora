@@ -36,6 +36,7 @@ document.addEventListener("DOMContentLoaded", function() {
     let columnMapping = { id: '', name: '', description: '' };
     let taskUrlBaseValue = 'https://app.clickup.com/t/4540126/';
     let rawData = [];
+    let taskComments = {}; // Store comments for each task comparison
 
     function loadState() {
         log('Checking for saved state...');
@@ -48,6 +49,7 @@ document.addEventListener("DOMContentLoaded", function() {
             columnMapping = state.columnMapping || { id: '', name: '', description: '' };
             taskUrlBaseValue = state.taskUrlBase || 'https://app.clickup.com/t/4540126/';
             rawData = state.rawData;
+            taskComments = state.taskComments || {};
 
             if (allTasks.length > 0) {
                 setupArea.style.display = 'none';
@@ -67,7 +69,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function saveState() {
-        const state = { allTasks, sortState, columnMapping, taskUrlBase: taskUrlBaseValue, rawData };
+        const state = { allTasks, sortState, columnMapping, taskUrlBase: taskUrlBaseValue, rawData, taskComments };
         localStorage.setItem('taskSorterState', JSON.stringify(state));
     }
 
@@ -270,6 +272,8 @@ document.addEventListener("DOMContentLoaded", function() {
     function displayTaskContent(task, element) {
         const name = task.data[columnMapping.name] || '';
         const description = task.data[columnMapping.description] || '';
+        const taskId = task.id;
+        const existingComment = taskComments[taskId] || '';
         
         // Truncate description to 500 characters
         const truncatedDesc = description.length > 500 ? 
@@ -278,7 +282,26 @@ document.addEventListener("DOMContentLoaded", function() {
         element.innerHTML = `
             <div class="task-name">${name}</div>
             <div class="task-description">${truncatedDesc}</div>
+            <div class="task-comment-section">
+                <label for="comment-${taskId}" class="comment-label">Note:</label>
+                <textarea id="comment-${taskId}" class="task-comment" placeholder="e.g., duplicate of task #123, low priority due to..." rows="2">${existingComment}</textarea>
+            </div>
         `;
+        
+        // Add event listener to save comment when it changes
+        const commentField = element.querySelector(`#comment-${taskId}`);
+        commentField.addEventListener('input', function() {
+            taskComments[taskId] = this.value;
+            saveState();
+        });
+        
+        // Prevent task selection when clicking on comment field
+        commentField.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+        commentField.addEventListener('focus', function(e) {
+            e.stopPropagation();
+        });
     }
     
     function displayTaskQR(task, element) {
@@ -358,7 +381,8 @@ document.addEventListener("DOMContentLoaded", function() {
             const task = allTasks.find(t => t.id === id);
             const exportData = {
                 rank: index + 1,
-                ...task.data
+                ...task.data,
+                comment: taskComments[id] || ''
             };
             return exportData;
         });
@@ -382,6 +406,7 @@ document.addEventListener("DOMContentLoaded", function() {
         columnMapping = { id: '', name: '', description: '' };
         taskUrlBaseValue = 'https://app.clickup.com/t/4540126/';
         rawData = [];
+        taskComments = {};
         setupArea.style.display = 'block';
         columnSelectionArea.style.display = 'none';
         sortingArea.style.display = 'none';
