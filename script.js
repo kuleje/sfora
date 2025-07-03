@@ -28,6 +28,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const exportCsvButton = document.getElementById('export-csv');
     const restartButton = document.getElementById('restart');
     const restartSortingButton = document.getElementById('restart-sorting');
+    const exportPartialButton = document.getElementById('export-partial');
     const progressBar = document.getElementById('progress-bar');
     const progressText = document.getElementById('progress-text');
 
@@ -398,6 +399,54 @@ document.addEventListener("DOMContentLoaded", function() {
         document.body.removeChild(link);
     }
 
+    function exportPartialResults() {
+        const allTasksToExport = [];
+        
+        // Add sorted tasks with their current ranks
+        sortState.sorted.forEach((id, index) => {
+            const task = allTasks.find(t => t.id === id);
+            allTasksToExport.push({
+                rank: index + 1,
+                status: 'sorted',
+                ...task.data,
+                comment: taskComments[id] || ''
+            });
+        });
+        
+        // Add current item being sorted (if any)
+        if (sortState.currentItem) {
+            const task = allTasks.find(t => t.id === sortState.currentItem);
+            allTasksToExport.push({
+                rank: '',
+                status: 'in_progress',
+                ...task.data,
+                comment: taskComments[sortState.currentItem] || ''
+            });
+        }
+        
+        // Add unsorted tasks
+        sortState.unSorted.forEach(id => {
+            const task = allTasks.find(t => t.id === id);
+            allTasksToExport.push({
+                rank: '',
+                status: 'unsorted',
+                ...task.data,
+                comment: taskComments[id] || ''
+            });
+        });
+        
+        const csv = Papa.unparse(allTasksToExport);
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'partial_sorted_tasks.csv');
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
     function reset() {
         log('Resetting application...');
         localStorage.removeItem('taskSorterState');
@@ -424,6 +473,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     startSortingButton.addEventListener('click', initializeSort);
     exportCsvButton.addEventListener('click', exportToCSV);
+    exportPartialButton.addEventListener('click', exportPartialResults);
     restartButton.addEventListener('click', reset);
     restartSortingButton.addEventListener('click', reset);
 
