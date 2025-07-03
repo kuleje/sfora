@@ -97,6 +97,10 @@ button:active {
     text-align: left;
     background-color: #fdfdfd;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
 }
 
 .task:hover {
@@ -109,6 +113,9 @@ button:active {
     margin-bottom: 0.7rem;
     font-size: 1.2em;
     color: #34495e;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
 }
 
 .task-description {
@@ -116,6 +123,10 @@ button:active {
     color: #666;
     line-height: 1.5;
     margin-bottom: 1rem;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
 }
 
 #qr-codes-area {
