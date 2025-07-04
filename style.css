@@ -91,6 +91,30 @@ button:active {
     background-color: #e67e22;
 }
 
+#action-buttons {
+    margin-top: 1rem;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+#undo-button {
+    background-color: #6c757d;
+    order: -1; /* Put undo button first */
+}
+
+#undo-button:hover:not(:disabled) {
+    background-color: #5a6268;
+}
+
+#undo-button:disabled {
+    background-color: #e9ecef;
+    color: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
 #comparison-area {
     display: flex;
     justify-content: space-between;

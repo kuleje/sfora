@@ -28,6 +28,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const exportCsvButton = document.getElementById('export-csv');
     const restartButton = document.getElementById('restart');
     const restartSortingButton = document.getElementById('restart-sorting');
+    const undoButton = document.getElementById('undo-button');
     const exportPartialButton = document.getElementById('export-partial');
     const progressBar = document.getElementById('progress-bar');
     const progressText = document.getElementById('progress-text');
@@ -39,7 +40,8 @@ document.addEventListener("DOMContentLoaded", function() {
     let columnMapping = { id: '', name: '', description: '' };
     let taskUrlBaseValue = 'https://app.clickup.com/t/4540126/';
     let rawData = [];
-    let taskComments = {}; // Store comments for each task comparison
+    let taskComments = {};
+    let actionHistory = []; // Track actions for undo functionality // Store comments for each task comparison
 
     function loadState() {
         log('Checking for saved state...');
@@ -70,6 +72,9 @@ document.addEventListener("DOMContentLoaded", function() {
                     });
                 }
             }
+            
+            // Load action history
+            actionHistory = state.actionHistory || [];
 
             if (allTasks.length > 0) {
                 setupArea.style.display = 'none';
@@ -97,7 +102,8 @@ document.addEventListener("DOMContentLoaded", function() {
             rawData, 
             taskComments,
             rankGroups: Array.from(rankGroups.entries()),
-            taskToGroup: Array.from(taskToGroup.entries())
+            taskToGroup: Array.from(taskToGroup.entries()),
+            actionHistory: actionHistory
         };
         localStorage.setItem('taskSorterState', JSON.stringify(state));
     }
@@ -234,6 +240,7 @@ document.addEventListener("DOMContentLoaded", function() {
         // Initialize each task as its own group
         rankGroups.clear();
         taskToGroup.clear();
+        actionHistory = []; // Clear undo history
         allTasks.forEach(task => {
             const groupId = `single_${task.id}`;
             rankGroups.set(groupId, [task.id]);
@@ -437,6 +444,15 @@ document.addEventListener("DOMContentLoaded", function() {
     function recordChoice(choice) {
         const { low, high } = sortState.searchBounds;
         const mid = Math.floor((low + high) / 2);
+        
+        // Save state before making changes for undo
+        const beforeState = {
+            sortState: JSON.parse(JSON.stringify(sortState)),
+            rankGroups: new Map(rankGroups),
+            taskToGroup: new Map(taskToGroup),
+            choice: choice,
+            timestamp: Date.now()
+        };
 
         if (choice === 'A') { // currentItem is more important
             sortState.searchBounds.high = mid - 1;
@@ -446,9 +462,49 @@ document.addEventListener("DOMContentLoaded", function() {
             const midGroupId = sortState.sortedGroups[mid];
             const existingTaskId = rankGroups.get(midGroupId)[0]; // Get first task from the group
             handleEqualRank(sortState.currentItem, existingTaskId, mid);
+            actionHistory.push(beforeState);
+            updateUndoButton();
             return;
         }
+        
+        actionHistory.push(beforeState);
+        updateUndoButton();
         continueSort();
+    }
+    
+    function undoLastChoice() {
+        if (actionHistory.length === 0) {
+            log('No actions to undo');
+            return;
+        }
+        
+        const lastState = actionHistory.pop();
+        log(`Undoing last choice: ${lastState.choice}`);
+        
+        // Restore previous state
+        sortState = lastState.sortState;
+        rankGroups = lastState.rankGroups;
+        taskToGroup = lastState.taskToGroup;
+        
+        updateUndoButton();
+        saveState();
+        
+        // Continue from the restored state
+        if (sortState.done) {
+            displayResults();
+        } else {
+            continueSort();
+        }
+    }
+    
+    function updateUndoButton() {
+        if (actionHistory.length > 0) {
+            undoButton.disabled = false;
+            undoButton.textContent = `Undo Last Choice (${actionHistory.length})`;
+        } else {
+            undoButton.disabled = true;
+            undoButton.textContent = 'Undo Last Choice';
+        }
     }
 
     function handleEqualRank(currentTaskId, existingTaskId, insertIndex) {
@@ -609,6 +665,8 @@ document.addEventListener("DOMContentLoaded", function() {
         taskComments = {};
         rankGroups.clear();
         taskToGroup.clear();
+        actionHistory = [];
+        updateUndoButton();
         setupArea.style.display = 'block';
         columnSelectionArea.style.display = 'none';
         sortingArea.style.display = 'none';
@@ -629,6 +687,7 @@ document.addEventListener("DOMContentLoaded", function() {
     exportPartialButton.addEventListener('click', exportPartialResults);
     restartButton.addEventListener('click', reset);
     restartSortingButton.addEventListener('click', reset);
+    undoButton.addEventListener('click', undoLastChoice);
 
     // Function to toggle group details
     window.toggleGroupDetails = function(taskId, button) {
