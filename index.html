@@ -84,7 +84,12 @@
 
         <div id="results-area" style="display: none;">
             <h2>Sorted Tasks</h2>
-            <ol id="sorted-list"></ol>
+            <div id="results-options">
+                <label>
+                    <input type="checkbox" id="group-by-assignee"> Group by Assignee
+                </label>
+            </div>
+            <div id="sorted-results"></div>
             <button id="export-csv">Export as CSV</button>
             <button id="restart">Start Over</button>
         </div>
