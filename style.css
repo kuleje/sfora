@@ -250,12 +250,24 @@ button:active {
 
 .task-name {
     font-weight: bold;
-    margin-bottom: 0.7rem;
+    margin-bottom: 0.5rem;
     font-size: 1.2em;
     color: #34495e;
     overflow-wrap: break-word;
     word-wrap: break-word;
     word-break: break-word;
+}
+
+.task-assignee {
+    font-size: 0.9em;
+    color: #007bff;
+    margin-bottom: 0.7rem;
+    font-weight: 500;
+    padding: 0.2rem 0.5rem;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    border-left: 3px solid #007bff;
+    display: inline-block;
 }
 
 .task-description {

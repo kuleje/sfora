@@ -13,10 +13,12 @@ document.addEventListener("DOMContentLoaded", function() {
     const taskIdColumn = document.getElementById('task-id-column');
     const taskNameColumn = document.getElementById('task-name-column');
     const taskDescriptionColumn = document.getElementById('task-description-column');
+    const taskAssigneeColumn = document.getElementById('task-assignee-column');
     const taskUrlBase = document.getElementById('task-url-base');
     const taskIdPreview = document.getElementById('task-id-preview');
     const taskNamePreview = document.getElementById('task-name-preview');
     const taskDescriptionPreview = document.getElementById('task-description-preview');
+    const taskAssigneePreview = document.getElementById('task-assignee-preview');
     const startSortingButton = document.getElementById('start-sorting-button');
     const sortingArea = document.getElementById('sorting-area');
     const resultsArea = document.getElementById('results-area');
@@ -37,7 +39,7 @@ document.addEventListener("DOMContentLoaded", function() {
     let sortState = {};
     let rankGroups = new Map(); // Map of groupId -> array of taskIds
     let taskToGroup = new Map(); // Map of taskId -> groupId
-    let columnMapping = { id: '', name: '', description: '' };
+    let columnMapping = { id: '', name: '', description: '', assignee: '' };
     let taskUrlBaseValue = 'https://app.clickup.com/t/4540126/';
     let rawData = [];
     let taskComments = {};
@@ -51,7 +53,7 @@ document.addEventListener("DOMContentLoaded", function() {
             const state = JSON.parse(savedState);
             allTasks = state.allTasks;
             sortState = state.sortState;
-            columnMapping = state.columnMapping || { id: '', name: '', description: '' };
+            columnMapping = state.columnMapping || { id: '', name: '', description: '', assignee: '' };
             taskUrlBaseValue = state.taskUrlBase || 'https://app.clickup.com/t/4540126/';
             rawData = state.rawData;
             taskComments = state.taskComments || {};
@@ -141,7 +143,7 @@ document.addEventListener("DOMContentLoaded", function() {
         columnSelectionArea.style.display = 'block';
         
         // Populate dropdowns
-        [taskIdColumn, taskNameColumn, taskDescriptionColumn].forEach(select => {
+        [taskIdColumn, taskNameColumn, taskDescriptionColumn, taskAssigneeColumn].forEach(select => {
             select.innerHTML = '<option value="">Select column...</option>';
             columns.forEach(column => {
                 const option = document.createElement('option');
@@ -155,6 +157,7 @@ document.addEventListener("DOMContentLoaded", function() {
         taskIdColumn.addEventListener('change', () => updatePreview('id'));
         taskNameColumn.addEventListener('change', () => updatePreview('name'));
         taskDescriptionColumn.addEventListener('change', () => updatePreview('description'));
+        taskAssigneeColumn.addEventListener('change', () => updatePreview('assignee'));
         
         // Auto-select default columns if they exist
         autoSelectDefaultColumns(columns);
@@ -162,9 +165,11 @@ document.addEventListener("DOMContentLoaded", function() {
     
     function updatePreview(type) {
         const selectElement = type === 'id' ? taskIdColumn : 
-                             type === 'name' ? taskNameColumn : taskDescriptionColumn;
+                             type === 'name' ? taskNameColumn : 
+                             type === 'description' ? taskDescriptionColumn : taskAssigneeColumn;
         const previewElement = type === 'id' ? taskIdPreview : 
-                              type === 'name' ? taskNamePreview : taskDescriptionPreview;
+                              type === 'name' ? taskNamePreview : 
+                              type === 'description' ? taskDescriptionPreview : taskAssigneePreview;
         
         const column = selectElement.value;
         if (column && rawData.length > 0) {
@@ -182,7 +187,8 @@ document.addEventListener("DOMContentLoaded", function() {
         const defaultMappings = {
             id: ['Task Custom ID', 'Task ID', 'ID', 'task_id', 'id'],
             name: ['Task Name', 'Name', 'Title', 'task_name', 'name', 'title'],
-            description: ['Task Content', 'Description', 'Content', 'Details', 'task_content', 'description', 'content']
+            description: ['Task Content', 'Description', 'Content', 'Details', 'task_content', 'description', 'content'],
+            assignee: ['Assignee', 'Assigned to', 'Owner', 'Task Assignees', 'assignee', 'assigned_to', 'owner']
         };
         
         // Auto-select Task ID
@@ -208,6 +214,15 @@ document.addEventListener("DOMContentLoaded", function() {
             if (columns.includes(defaultName)) {
                 taskDescriptionColumn.value = defaultName;
                 updatePreview('description');
+                break;
+            }
+        }
+        
+        // Auto-select Task Assignee
+        for (const defaultName of defaultMappings.assignee) {
+            if (columns.includes(defaultName)) {
+                taskAssigneeColumn.value = defaultName;
+                updatePreview('assignee');
                 break;
             }
         }
@@ -344,9 +359,23 @@ document.addEventListener("DOMContentLoaded", function() {
         updateProgress();
     }
     
+    function parseAssignee(assigneeField) {
+        if (!assigneeField) return '';
+        
+        // Remove brackets and parse comma-separated values
+        const cleanField = assigneeField.replace(/[\[\]]/g, '').trim();
+        
+        if (!cleanField) return '';
+        
+        // Split by comma and get first assignee
+        const assignees = cleanField.split(',').map(name => name.trim());
+        return assignees[0] || '';
+    }
+    
     function displayTaskContent(task, element, groupTasks = null) {
         const name = task.data[columnMapping.name] || '';
         const description = task.data[columnMapping.description] || '';
+        const assignee = parseAssignee(task.data[columnMapping.assignee]);
         const taskId = task.id;
         const existingComment = taskComments[taskId] || '';
         const isGroup = groupTasks && groupTasks.length > 1;
@@ -370,6 +399,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 <button class="group-expand-btn" data-task-id="${taskId}">Show all</button>
             </div>` : ''}
             <div class="task-name">${name}</div>
+            ${assignee ? `<div class="task-assignee">👤 ${assignee}</div>` : ''}
             <div class="task-description">${truncatedDesc}</div>
             ${isGroup ? `<div class="group-details collapsed" id="group-details-${taskId}">
                 <div class="group-details-header">All tasks in this group:</div>
@@ -659,7 +689,7 @@ document.addEventListener("DOMContentLoaded", function() {
         localStorage.removeItem('taskSorterState');
         allTasks = [];
         sortState = {};
-        columnMapping = { id: '', name: '', description: '' };
+        columnMapping = { id: '', name: '', description: '', assignee: '' };
         taskUrlBaseValue = 'https://app.clickup.com/t/4540126/';
         rawData = [];
         taskComments = {};
