@@ -34,6 +34,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
     let allTasks = [];
     let sortState = {};
+    let rankGroups = new Map(); // Map of groupId -> array of taskIds
+    let taskToGroup = new Map(); // Map of taskId -> groupId
     let columnMapping = { id: '', name: '', description: '' };
     let taskUrlBaseValue = 'https://app.clickup.com/t/4540126/';
     let rawData = [];
@@ -51,6 +53,23 @@ document.addEventListener("DOMContentLoaded", function() {
             taskUrlBaseValue = state.taskUrlBase || 'https://app.clickup.com/t/4540126/';
             rawData = state.rawData;
             taskComments = state.taskComments || {};
+            
+            // Load rank groups
+            if (state.rankGroups && state.taskToGroup) {
+                rankGroups = new Map(state.rankGroups);
+                taskToGroup = new Map(state.taskToGroup);
+            } else {
+                // Initialize groups if not saved (backwards compatibility)
+                rankGroups.clear();
+                taskToGroup.clear();
+                if (allTasks.length > 0) {
+                    allTasks.forEach(task => {
+                        const groupId = `single_${task.id}`;
+                        rankGroups.set(groupId, [task.id]);
+                        taskToGroup.set(task.id, groupId);
+                    });
+                }
+            }
 
             if (allTasks.length > 0) {
                 setupArea.style.display = 'none';
@@ -70,7 +89,16 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function saveState() {
-        const state = { allTasks, sortState, columnMapping, taskUrlBase: taskUrlBaseValue, rawData, taskComments };
+        const state = { 
+            allTasks, 
+            sortState, 
+            columnMapping, 
+            taskUrlBase: taskUrlBaseValue, 
+            rawData, 
+            taskComments,
+            rankGroups: Array.from(rankGroups.entries()),
+            taskToGroup: Array.from(taskToGroup.entries())
+        };
         localStorage.setItem('taskSorterState', JSON.stringify(state));
     }
 
@@ -196,16 +224,26 @@ document.addEventListener("DOMContentLoaded", function() {
         sortingArea.style.display = 'block';
         
         sortState = {
-            sorted: [],
+            sortedGroups: [], // Array of groupIds in sorted order
             unSorted: allTasks.map(t => t.id),
             currentItem: null,
             searchBounds: { low: 0, high: 0 },
             done: false
         };
+        
+        // Initialize each task as its own group
+        rankGroups.clear();
+        taskToGroup.clear();
+        allTasks.forEach(task => {
+            const groupId = `single_${task.id}`;
+            rankGroups.set(groupId, [task.id]);
+            taskToGroup.set(task.id, groupId);
+        });
 
         if (sortState.unSorted.length > 0) {
             const firstItem = sortState.unSorted.shift();
-            sortState.sorted.push(firstItem);
+            const firstGroupId = taskToGroup.get(firstItem);
+            sortState.sortedGroups.push(firstGroupId);
         }
         
         log('Starting sort...');
@@ -225,7 +263,7 @@ document.addEventListener("DOMContentLoaded", function() {
         if (!sortState.currentItem) {
             sortState.currentItem = sortState.unSorted.shift();
             sortState.searchBounds.low = 0;
-            sortState.searchBounds.high = sortState.sorted.length - 1;
+            sortState.searchBounds.high = sortState.sortedGroups.length - 1;
             log(`New item to sort: ${sortState.currentItem}`);
         }
 
@@ -233,23 +271,42 @@ document.addEventListener("DOMContentLoaded", function() {
 
         if (low > high) {
             log(`Placing item ${sortState.currentItem} at index ${low}`);
-            sortState.sorted.splice(low, 0, sortState.currentItem);
+            const currentGroupId = taskToGroup.get(sortState.currentItem);
+            sortState.sortedGroups.splice(low, 0, currentGroupId);
             sortState.currentItem = null;
             saveState();
             continueSort();
         } else {
             const mid = Math.floor((low + high) / 2);
             const itemA_id = sortState.currentItem;
-            const itemB_id = sortState.sorted[mid];
-            log(`Comparing item ${itemA_id} with item ${itemB_id}`);
+            const midGroupId = sortState.sortedGroups[mid];
+            
+            if (!midGroupId || !rankGroups.has(midGroupId)) {
+                log(`Error: Invalid group ${midGroupId} at index ${mid}`);
+                log(`Available groups: ${Array.from(rankGroups.keys()).join(', ')}`);
+                log(`SortedGroups: ${sortState.sortedGroups.join(', ')}`);
+                return;
+            }
+            
+            const itemB_id = rankGroups.get(midGroupId)[0]; // Get first task from the group
+            log(`Comparing item ${itemA_id} with item ${itemB_id} (from group ${midGroupId})`);
             displayComparison(itemA_id, itemB_id);
         }
     }
 
     function displayComparison(task1Id, task2Id) {
+        log(`displayComparison called with: ${task1Id}, ${task2Id}`);
         const task1 = allTasks.find(t => t.id === task1Id);
         const task2 = allTasks.find(t => t.id === task2Id);
-
+        
+        if (!task1) {
+            log(`Error: Task1 not found with ID ${task1Id}`);
+            return;
+        }
+        if (!task2) {
+            log(`Error: Task2 not found with ID ${task2Id}`);
+            return;
+        }
 
         // Clear previous content
         taskAElement.innerHTML = '';
@@ -257,9 +314,15 @@ document.addEventListener("DOMContentLoaded", function() {
         qrAElement.innerHTML = '';
         qrBElement.innerHTML = '';
 
-        // Display both name and truncated description
-        displayTaskContent(task1, taskAElement);
-        displayTaskContent(task2, taskBElement);
+        // Get group info for both tasks
+        const task1GroupId = taskToGroup.get(task1Id);
+        const task2GroupId = taskToGroup.get(task2Id);
+        const task1Group = rankGroups.get(task1GroupId);
+        const task2Group = rankGroups.get(task2GroupId);
+
+        // Display both tasks with group indicators
+        displayTaskContent(task1, taskAElement, task1Group);
+        displayTaskContent(task2, taskBElement, task2Group);
         
         // Display QR codes below
         displayTaskQR(task1, qrAElement);
@@ -267,22 +330,47 @@ document.addEventListener("DOMContentLoaded", function() {
 
         taskAElement.onclick = () => recordChoice('A');
         taskBElement.onclick = () => recordChoice('B');
+        
+        // Add equal rank button event listener
+        const equalRankButton = document.getElementById('equal-rank-button');
+        equalRankButton.onclick = () => recordChoice('Equal');
         updateProgress();
     }
     
-    function displayTaskContent(task, element) {
+    function displayTaskContent(task, element, groupTasks = null) {
         const name = task.data[columnMapping.name] || '';
         const description = task.data[columnMapping.description] || '';
         const taskId = task.id;
         const existingComment = taskComments[taskId] || '';
+        const isGroup = groupTasks && groupTasks.length > 1;
+        
+        // Add group styling if this is a group
+        if (isGroup) {
+            element.classList.add('task-group');
+            element.setAttribute('data-group-size', groupTasks.length);
+        } else {
+            element.classList.remove('task-group');
+            element.removeAttribute('data-group-size');
+        }
         
         // Truncate description to 500 characters
         const truncatedDesc = description.length > 500 ? 
             description.substring(0, 500) + '...' : description;
         
         element.innerHTML = `
+            ${isGroup ? `<div class="group-indicator">
+                <span class="group-badge">${groupTasks.length} tasks</span>
+                <button class="group-expand-btn" data-task-id="${taskId}">Show all</button>
+            </div>` : ''}
             <div class="task-name">${name}</div>
             <div class="task-description">${truncatedDesc}</div>
+            ${isGroup ? `<div class="group-details collapsed" id="group-details-${taskId}">
+                <div class="group-details-header">All tasks in this group:</div>
+                <ul class="group-task-list">${groupTasks.map(id => {
+                    const t = allTasks.find(task => task.id === id);
+                    return `<li>${t.data[columnMapping.name] || 'Unnamed task'}</li>`;
+                }).join('')}</ul>
+            </div>` : ''}
             <div class="task-comment-section">
                 <label for="comment-${taskId}" class="comment-label">Note:</label>
                 <textarea id="comment-${taskId}" class="task-comment" placeholder="e.g., duplicate of task #123, low priority due to..." rows="2">${existingComment}</textarea>
@@ -300,6 +388,15 @@ document.addEventListener("DOMContentLoaded", function() {
         commentField.addEventListener('click', function(e) {
             e.stopPropagation();
         });
+        
+        // Add event listener for group expand button if it exists
+        const expandButton = element.querySelector('.group-expand-btn');
+        if (expandButton) {
+            expandButton.addEventListener('click', function(e) {
+                e.stopPropagation(); // Prevent triggering task selection
+                toggleGroupDetails(taskId, this);
+            });
+        }
         commentField.addEventListener('focus', function(e) {
             e.stopPropagation();
         });
@@ -343,16 +440,59 @@ document.addEventListener("DOMContentLoaded", function() {
 
         if (choice === 'A') { // currentItem is more important
             sortState.searchBounds.high = mid - 1;
-        } else { // currentItem is less important
+        } else if (choice === 'B') { // currentItem is less important
             sortState.searchBounds.low = mid + 1;
+        } else if (choice === 'Equal') { // tasks are equal priority
+            const midGroupId = sortState.sortedGroups[mid];
+            const existingTaskId = rankGroups.get(midGroupId)[0]; // Get first task from the group
+            handleEqualRank(sortState.currentItem, existingTaskId, mid);
+            return;
         }
         continueSort();
     }
 
+    function handleEqualRank(currentTaskId, existingTaskId, insertIndex) {
+        log(`Marking tasks ${currentTaskId} and ${existingTaskId} as equal rank`);
+        
+        const currentGroupId = taskToGroup.get(currentTaskId);
+        const existingGroupId = taskToGroup.get(existingTaskId);
+        
+        // Merge the groups
+        const mergedTasks = [...rankGroups.get(currentGroupId), ...rankGroups.get(existingGroupId)];
+        const newGroupId = `merged_${Date.now()}`;
+        
+        // Create new merged group
+        rankGroups.set(newGroupId, mergedTasks);
+        
+        // Update task-to-group mapping
+        mergedTasks.forEach(taskId => {
+            taskToGroup.set(taskId, newGroupId);
+        });
+        
+        // Clean up old groups
+        rankGroups.delete(currentGroupId);
+        rankGroups.delete(existingGroupId);
+        
+        // Replace the existing group in sortedGroups with the new merged group
+        const existingGroupIndex = sortState.sortedGroups.indexOf(existingGroupId);
+        sortState.sortedGroups[existingGroupIndex] = newGroupId;
+        
+        sortState.currentItem = null;
+        saveState();
+        continueSort();
+    }
+
+    function calculateRank(taskId) {
+        const groupId = taskToGroup.get(taskId);
+        const groupIndex = sortState.sortedGroups.indexOf(groupId);
+        return groupIndex + 1; // All tasks in the same group get the same rank
+    }
+
     function updateProgress() {
         const totalTasks = allTasks.length;
-        const sortedCount = sortState.sorted.length;
-        const progress = totalTasks > 0 ? (sortedCount / totalTasks) * 100 : 0;
+        const sortedCount = sortState.sortedGroups.length;
+        const totalSortedTasks = sortState.sortedGroups.reduce((count, groupId) => count + rankGroups.get(groupId).length, 0);
+        const progress = totalTasks > 0 ? (totalSortedTasks / totalTasks) * 100 : 0;
         
         // Estimate remaining comparisons using binary search worst case
         const remainingTasks = sortState.unSorted.length + (sortState.currentItem ? 1 : 0);
@@ -360,7 +500,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const estimatedRemaining = remainingTasks * avgComparisons;
         
         progressBar.style.width = `${progress}%`;
-        progressText.textContent = `Sorted ${sortedCount} of ${totalTasks} tasks (~${estimatedRemaining} comparisons left)`;
+        progressText.textContent = `Sorted ${totalSortedTasks} of ${totalTasks} tasks (~${estimatedRemaining} comparisons left)`;
     }
 
     function displayResults() {
@@ -368,20 +508,30 @@ document.addEventListener("DOMContentLoaded", function() {
         sortingArea.style.display = 'none';
         resultsArea.style.display = 'block';
         sortedList.innerHTML = '';
-        const sortedTasks = sortState.sorted.map(id => allTasks.find(t => t.id === id));
         
-        sortedTasks.forEach(task => {
-            const li = document.createElement('li');
-            li.textContent = task.data[columnMapping.name] || '';
-            sortedList.appendChild(li);
+        // Display tasks grouped by rank
+        sortState.sortedGroups.forEach((groupId, groupIndex) => {
+            const tasks = rankGroups.get(groupId);
+            const rank = groupIndex + 1;
+            
+            tasks.forEach(taskId => {
+                const task = allTasks.find(t => t.id === taskId);
+                const li = document.createElement('li');
+                li.textContent = `${rank}. ${task.data[columnMapping.name] || ''}`;
+                if (tasks.length > 1) {
+                    li.textContent += ` (tied with ${tasks.length - 1} other${tasks.length > 2 ? 's' : ''})`;
+                }
+                sortedList.appendChild(li);
+            });
         });
     }
 
     function exportToCSV() {
         const sortedTasks = sortState.sorted.map((id, index) => {
             const task = allTasks.find(t => t.id === id);
+            const rank = calculateRank(id, index);
             const exportData = {
-                rank: index + 1,
+                rank: rank,
                 ...task.data,
                 comment: taskComments[id] || ''
             };
@@ -405,8 +555,9 @@ document.addEventListener("DOMContentLoaded", function() {
         // Add sorted tasks with their current ranks
         sortState.sorted.forEach((id, index) => {
             const task = allTasks.find(t => t.id === id);
+            const rank = calculateRank(id, index);
             allTasksToExport.push({
-                rank: index + 1,
+                rank: rank,
                 status: 'sorted',
                 ...task.data,
                 comment: taskComments[id] || ''
@@ -456,6 +607,8 @@ document.addEventListener("DOMContentLoaded", function() {
         taskUrlBaseValue = 'https://app.clickup.com/t/4540126/';
         rawData = [];
         taskComments = {};
+        rankGroups.clear();
+        taskToGroup.clear();
         setupArea.style.display = 'block';
         columnSelectionArea.style.display = 'none';
         sortingArea.style.display = 'none';
@@ -476,6 +629,18 @@ document.addEventListener("DOMContentLoaded", function() {
     exportPartialButton.addEventListener('click', exportPartialResults);
     restartButton.addEventListener('click', reset);
     restartSortingButton.addEventListener('click', reset);
+
+    // Function to toggle group details
+    window.toggleGroupDetails = function(taskId, button) {
+        const details = document.getElementById(`group-details-${taskId}`);
+        if (details.classList.contains('collapsed')) {
+            details.classList.remove('collapsed');
+            button.textContent = 'Hide';
+        } else {
+            details.classList.add('collapsed');
+            button.textContent = 'Show all';
+        }
+    };
 
     window.addEventListener('load', loadState);
 });

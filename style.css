@@ -76,6 +76,21 @@ button:active {
     transform: translateY(0);
 }
 
+#equal-rank-area {
+    margin: 1.5rem 0;
+    text-align: center;
+}
+
+#equal-rank-button {
+    background-color: #f39c12; /* Orange color for equal rank */
+    font-size: 1.1em;
+    padding: 15px 30px;
+}
+
+#equal-rank-button:hover {
+    background-color: #e67e22;
+}
+
 #comparison-area {
     display: flex;
     justify-content: space-between;
@@ -101,6 +116,107 @@ button:active {
     word-wrap: break-word;
     word-break: break-word;
     hyphens: auto;
+    position: relative;
+}
+
+/* Stacked card appearance for groups */
+.task-group {
+    background-color: #f8f9fa;
+    border: 2px solid #007bff;
+}
+
+.task-group::before,
+.task-group::after {
+    content: '';
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+    background-color: #fdfdfd;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    z-index: -1;
+}
+
+.task-group::after {
+    top: -6px;
+    left: -6px;
+    right: -6px;
+    bottom: -6px;
+    z-index: -2;
+}
+
+/* Group indicator styles */
+.group-indicator {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    background-color: #e3f2fd;
+    border-radius: 6px;
+    border-left: 4px solid #007bff;
+}
+
+.group-badge {
+    background-color: #007bff;
+    color: white;
+    padding: 0.3rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: bold;
+}
+
+.group-expand-btn {
+    background-color: transparent;
+    border: 1px solid #007bff;
+    color: #007bff;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.8em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.group-expand-btn:hover {
+    background-color: #007bff;
+    color: white;
+    transform: none;
+}
+
+/* Group details styles */
+.group-details {
+    margin-top: 0.8rem;
+    padding: 0.8rem;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+    transition: all 0.3s ease;
+}
+
+.group-details.collapsed {
+    display: none;
+}
+
+.group-details-header {
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    color: #495057;
+    font-size: 0.9em;
+}
+
+.group-task-list {
+    margin: 0;
+    padding-left: 1.2rem;
+    list-style-type: disc;
+}
+
+.group-task-list li {
+    margin: 0.3rem 0;
+    font-size: 0.85em;
+    color: #6c757d;
+    line-height: 1.3;
 }
 
 .task:hover {
