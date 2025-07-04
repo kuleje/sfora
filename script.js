@@ -26,7 +26,8 @@ document.addEventListener("DOMContentLoaded", function() {
     const taskBElement = document.getElementById('task-b');
     const qrAElement = document.getElementById('qr-a');
     const qrBElement = document.getElementById('qr-b');
-    const sortedList = document.getElementById('sorted-list');
+    const sortedResults = document.getElementById('sorted-results');
+    const groupByAssigneeCheckbox = document.getElementById('group-by-assignee');
     const exportCsvButton = document.getElementById('export-csv');
     const restartButton = document.getElementById('restart');
     const restartSortingButton = document.getElementById('restart-sorting');
@@ -593,7 +594,26 @@ document.addEventListener("DOMContentLoaded", function() {
         log('Displaying results...');
         sortingArea.style.display = 'none';
         resultsArea.style.display = 'block';
-        sortedList.innerHTML = '';
+        
+        // Add event listener for grouping toggle
+        groupByAssigneeCheckbox.addEventListener('change', renderResults);
+        
+        renderResults();
+    }
+    
+    function renderResults() {
+        sortedResults.innerHTML = '';
+        
+        if (groupByAssigneeCheckbox.checked) {
+            renderGroupedByAssignee();
+        } else {
+            renderDefaultList();
+        }
+    }
+    
+    function renderDefaultList() {
+        const ol = document.createElement('ol');
+        ol.className = 'sorted-list';
         
         // Display tasks grouped by rank
         sortState.sortedGroups.forEach((groupId, groupIndex) => {
@@ -602,27 +622,103 @@ document.addEventListener("DOMContentLoaded", function() {
             
             tasks.forEach(taskId => {
                 const task = allTasks.find(t => t.id === taskId);
+                const assignee = parseAssignee(task.data[columnMapping.assignee]);
                 const li = document.createElement('li');
-                li.textContent = `${rank}. ${task.data[columnMapping.name] || ''}`;
+                li.innerHTML = `
+                    <span class="task-name-result">${task.data[columnMapping.name] || 'Unnamed task'}</span>
+                    ${assignee ? `<span class="assignee-badge">${assignee}</span>` : ''}
+                `;
                 if (tasks.length > 1) {
-                    li.textContent += ` (tied with ${tasks.length - 1} other${tasks.length > 2 ? 's' : ''})`;
+                    li.innerHTML += `<span class="tie-indicator"> (tied with ${tasks.length - 1} other${tasks.length > 2 ? 's' : ''})</span>`;
                 }
-                sortedList.appendChild(li);
+                ol.appendChild(li);
             });
+        });
+        
+        sortedResults.appendChild(ol);
+    }
+    
+    function renderGroupedByAssignee() {
+        // Group tasks by assignee
+        const assigneeGroups = new Map();
+        
+        sortState.sortedGroups.forEach((groupId, groupIndex) => {
+            const tasks = rankGroups.get(groupId);
+            const rank = groupIndex + 1;
+            
+            tasks.forEach(taskId => {
+                const task = allTasks.find(t => t.id === taskId);
+                const assignee = parseAssignee(task.data[columnMapping.assignee]) || 'Unassigned';
+                
+                if (!assigneeGroups.has(assignee)) {
+                    assigneeGroups.set(assignee, []);
+                }
+                
+                assigneeGroups.get(assignee).push({
+                    task,
+                    rank,
+                    tieCount: tasks.length
+                });
+            });
+        });
+        
+        // Sort assignees alphabetically, but put "Unassigned" last
+        const sortedAssignees = Array.from(assigneeGroups.keys()).sort((a, b) => {
+            if (a === 'Unassigned') return 1;
+            if (b === 'Unassigned') return -1;
+            return a.localeCompare(b);
+        });
+        
+        // Render each assignee group
+        sortedAssignees.forEach(assignee => {
+            const groupDiv = document.createElement('div');
+            groupDiv.className = 'assignee-group';
+            
+            const header = document.createElement('h3');
+            header.className = 'assignee-header';
+            header.innerHTML = `
+                ${assignee === 'Unassigned' ? '❓' : '👤'} ${assignee} 
+                <span class="task-count">(${assigneeGroups.get(assignee).length} task${assigneeGroups.get(assignee).length !== 1 ? 's' : ''})</span>
+            `;
+            groupDiv.appendChild(header);
+            
+            const ol = document.createElement('ol');
+            ol.className = 'assignee-task-list';
+            
+            assigneeGroups.get(assignee).forEach(({ task, rank, tieCount }) => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span class="rank-badge">#${rank}</span>
+                    <span class="task-name-result">${task.data[columnMapping.name] || 'Unnamed task'}</span>
+                    ${tieCount > 1 ? `<span class="tie-indicator"> (tied with ${tieCount - 1} other${tieCount > 2 ? 's' : ''})</span>` : ''}
+                `;
+                ol.appendChild(li);
+            });
+            
+            groupDiv.appendChild(ol);
+            sortedResults.appendChild(groupDiv);
         });
     }
 
     function exportToCSV() {
-        const sortedTasks = sortState.sorted.map((id, index) => {
-            const task = allTasks.find(t => t.id === id);
-            const rank = calculateRank(id, index);
-            const exportData = {
-                rank: rank,
-                ...task.data,
-                comment: taskComments[id] || ''
-            };
-            return exportData;
+        const sortedTasks = [];
+        
+        // Export all sorted tasks with their ranks
+        sortState.sortedGroups.forEach((groupId, groupIndex) => {
+            const tasks = rankGroups.get(groupId);
+            const rank = groupIndex + 1;
+            
+            tasks.forEach(taskId => {
+                const task = allTasks.find(t => t.id === taskId);
+                const exportData = {
+                    rank: rank,
+                    ...task.data,
+                    comment: taskComments[taskId] || ''
+                };
+                sortedTasks.push(exportData);
+            });
         });
+        
         const csv = Papa.unparse(sortedTasks);
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
@@ -639,14 +735,18 @@ document.addEventListener("DOMContentLoaded", function() {
         const allTasksToExport = [];
         
         // Add sorted tasks with their current ranks
-        sortState.sorted.forEach((id, index) => {
-            const task = allTasks.find(t => t.id === id);
-            const rank = calculateRank(id, index);
-            allTasksToExport.push({
-                rank: rank,
-                status: 'sorted',
-                ...task.data,
-                comment: taskComments[id] || ''
+        sortState.sortedGroups.forEach((groupId, groupIndex) => {
+            const tasks = rankGroups.get(groupId);
+            const rank = groupIndex + 1;
+            
+            tasks.forEach(taskId => {
+                const task = allTasks.find(t => t.id === taskId);
+                allTasksToExport.push({
+                    rank: rank,
+                    status: 'sorted',
+                    ...task.data,
+                    comment: taskComments[taskId] || ''
+                });
             });
         });
         
@@ -702,7 +802,6 @@ document.addEventListener("DOMContentLoaded", function() {
         sortingArea.style.display = 'none';
         resultsArea.style.display = 'none';
         csvFileInput.value = '';
-        sortedList.innerHTML = '';
         progressBar.style.width = '0%';
         progressText.textContent = '';
     }
