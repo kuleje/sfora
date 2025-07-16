@@ -395,6 +395,12 @@ button:active {
     border-top: 1px solid #eee;
 }
 
+.comment-input-container {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+}
+
 .comment-label {
     display: block;
     margin-bottom: 0.3rem;
@@ -404,7 +410,7 @@ button:active {
 }
 
 .task-comment {
-    width: 100%;
+    flex: 1;
     padding: 8px;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -413,6 +419,43 @@ button:active {
     resize: vertical;
     min-height: 50px;
     background-color: #fafafa;
+}
+
+.save-comment-btn {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8em;
+    white-space: nowrap;
+    transition: background-color 0.2s ease;
+    height: fit-content;
+    align-self: flex-start;
+    margin-top: 0;
+}
+
+.save-comment-btn:hover {
+    background-color: #218838;
+    transform: none;
+}
+
+.save-comment-btn:active {
+    transform: none;
+    background-color: #1e7e34;
+}
+
+.comment-status {
+    font-size: 0.8em;
+    margin-top: 0.3rem;
+    min-height: 1.2em;
+    transition: all 0.3s ease;
+}
+
+.comment-status.saved {
+    color: #28a745;
+    font-weight: 500;
 }
 
 .task-comment:focus {
@@ -577,5 +620,16 @@ ol#sorted-list li {
     .column-preview {
         width: 100%;
         text-align: left;
+    }
+    
+    .comment-input-container {
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .save-comment-btn {
+        align-self: flex-end;
+        width: auto;
+        padding: 6px 10px;
     }
 }

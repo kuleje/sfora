@@ -411,20 +411,54 @@ document.addEventListener("DOMContentLoaded", function() {
             </div>` : ''}
             <div class="task-comment-section">
                 <label for="comment-${taskId}" class="comment-label">Note:</label>
-                <textarea id="comment-${taskId}" class="task-comment" placeholder="e.g., duplicate of task #123, low priority due to..." rows="2">${existingComment}</textarea>
+                <div class="comment-input-container">
+                    <textarea id="comment-${taskId}" class="task-comment" placeholder="e.g., duplicate of task #123, low priority due to..." rows="2">${existingComment}</textarea>
+                    <button id="save-comment-${taskId}" class="save-comment-btn" type="button">Save Note</button>
+                </div>
+                <div id="comment-status-${taskId}" class="comment-status"></div>
             </div>
         `;
         
         // Add event listener to save comment when it changes
         const commentField = element.querySelector(`#comment-${taskId}`);
+        const saveButton = element.querySelector(`#save-comment-${taskId}`);
+        const statusDiv = element.querySelector(`#comment-status-${taskId}`);
+        
+        // Auto-save on input but don't show confirmation
         commentField.addEventListener('input', function() {
             taskComments[taskId] = this.value;
             saveState();
+            // Clear any existing status when user types
+            statusDiv.textContent = '';
+            statusDiv.className = 'comment-status';
         });
         
-        // Prevent task selection when clicking on comment field
+        // Save button click handler for visual confirmation
+        saveButton.addEventListener('click', function(e) {
+            e.stopPropagation(); // Prevent triggering task selection
+            e.preventDefault();
+            
+            taskComments[taskId] = commentField.value;
+            saveState();
+            
+            // Show visual confirmation
+            statusDiv.textContent = 'Note saved!';
+            statusDiv.className = 'comment-status saved';
+            
+            // Clear the confirmation after 2 seconds
+            setTimeout(() => {
+                statusDiv.textContent = '';
+                statusDiv.className = 'comment-status';
+            }, 2000);
+        });
+        
+        // Prevent task selection when clicking on comment field or save button
         commentField.addEventListener('click', function(e) {
             e.stopPropagation();
+        });
+        
+        saveButton.addEventListener('click', function(e) {
+            e.stopPropagation(); // Already handled above, but being explicit
         });
         
         // Add event listener for group expand button if it exists
