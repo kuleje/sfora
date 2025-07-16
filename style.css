@@ -296,6 +296,17 @@ button:active {
     font-size: 0.9em;
 }
 
+.task-comment-preview {
+    font-size: 0.8em;
+    color: #666;
+    font-style: italic;
+    margin-top: 0.3rem;
+    padding: 0.3rem 0.5rem;
+    background-color: #f8f9fa;
+    border-radius: 3px;
+    border-left: 3px solid #dee2e6;
+}
+
 /* Assignee grouped results */
 .assignee-group {
     margin-bottom: 2rem;

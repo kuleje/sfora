@@ -777,7 +777,7 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
         
-        log(`Random ranking applied: ${sortState.sortedGroups.length} groups, ${removedTasks.size} removed tasks`);
+        log(`Random ranking applied: ${sortState.sortedGroups.length} groups, ${removedTasks.size} removed tasks`);\n        console.log('Removed tasks:', Array.from(removedTasks));\n        console.log('All tasks:', allTasks.map(t => t.id));
         
         saveState();
         displayResults();
@@ -868,10 +868,12 @@ document.addEventListener("DOMContentLoaded", function() {
             tasks.forEach(taskId => {
                 const task = allTasks.find(t => t.id === taskId);
                 const assignee = parseAssignee(task.data[columnMapping.assignee]);
+                const comment = taskComments[taskId] || '';
                 const li = document.createElement('li');
                 li.innerHTML = `
                     <span class="task-name-result">${task.data[columnMapping.name] || 'Unnamed task'}</span>
                     ${assignee ? `<span class="assignee-badge">${assignee}</span>` : ''}
+                    ${comment ? `<div class="task-comment-preview">${comment}</div>` : ''}
                 `;
                 if (tasks.length > 1) {
                     li.innerHTML += `<span class="tie-indicator"> (tied with ${tasks.length - 1} other${tasks.length > 2 ? 's' : ''})</span>`;
@@ -931,11 +933,13 @@ document.addEventListener("DOMContentLoaded", function() {
             ol.className = 'assignee-task-list';
             
             assigneeGroups.get(assignee).forEach(({ task, rank, tieCount }) => {
+                const comment = taskComments[task.id] || '';
                 const li = document.createElement('li');
                 li.innerHTML = `
                     <span class="rank-badge">#${rank}</span>
                     <span class="task-name-result">${task.data[columnMapping.name] || 'Unnamed task'}</span>
                     ${tieCount > 1 ? `<span class="tie-indicator"> (tied with ${tieCount - 1} other${tieCount > 2 ? 's' : ''})</span>` : ''}
+                    ${comment ? `<div class="task-comment-preview">${comment}</div>` : ''}
                 `;
                 ol.appendChild(li);
             });
@@ -957,11 +961,26 @@ document.addEventListener("DOMContentLoaded", function() {
                 const task = allTasks.find(t => t.id === taskId);
                 const exportData = {
                     rank: rank,
+                    status: 'ranked',
                     ...task.data,
                     comment: taskComments[taskId] || ''
                 };
                 sortedTasks.push(exportData);
             });
+        });
+        
+        // Add removed tasks with empty rank
+        removedTasks.forEach(taskId => {
+            const task = allTasks.find(t => t.id === taskId);
+            if (task) {
+                const exportData = {
+                    rank: '',
+                    status: 'removed',
+                    ...task.data,
+                    comment: taskComments[taskId] || ''
+                };
+                sortedTasks.push(exportData);
+            }
         });
         
         const csv = Papa.unparse(sortedTasks);
