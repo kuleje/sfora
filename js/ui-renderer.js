@@ -502,7 +502,7 @@ class UIRenderer {
 
     // Show debug controls
     showDebugControls() {
-        const debugElements = ['debug-controls', 'debug-controls-sorting', 'debug-controls-results'];
+        const debugElements = ['debug-controls', 'debug-controls-sorting', 'debug-controls-results', 'debug-controls-main'];
         debugElements.forEach(id => {
             const element = document.getElementById(id);
             if (element) element.style.display = 'block';
