@@ -118,7 +118,14 @@ class SortingEngine {
             return null;
         }
         
-        this.log(`Undoing last choice: ${lastState.choice}`);
+        if (lastState.action === 'remove') {
+            this.log(`Undoing remove task: ${lastState.taskId}`);
+        } else if (lastState.choice) {
+            this.log(`Undoing last choice: ${lastState.choice}`);
+        } else {
+            this.log('Undoing last action');
+        }
+        
         return lastState;
     }
 
@@ -130,7 +137,13 @@ class SortingEngine {
     // Get undo button text
     getUndoButtonText() {
         if (this.canUndo()) {
-            return `Undo Last Choice (${this.state.actionHistory.length})`;
+            const lastAction = this.state.actionHistory[this.state.actionHistory.length - 1];
+            if (lastAction.action === 'remove') {
+                return `Undo Remove Task (${this.state.actionHistory.length})`;
+            } else if (lastAction.choice) {
+                return `Undo Last Choice (${this.state.actionHistory.length})`;
+            }
+            return `Undo Last Action (${this.state.actionHistory.length})`;
         }
         return 'Undo Last Choice';
     }
@@ -138,7 +151,19 @@ class SortingEngine {
     // Remove task from sorting process
     removeTaskFromSorting(taskId) {
         this.log(`Removing task ${taskId} from sorting`);
+        
+        // Save state before removing for undo
+        const beforeState = {
+            sortState: JSON.parse(JSON.stringify(this.state.sortState)),
+            rankGroups: new Map(this.state.rankGroups),
+            taskToGroup: new Map(this.state.taskToGroup),
+            removedTasks: new Set(this.state.removedTasks),
+            action: 'remove',
+            taskId: taskId
+        };
+        
         this.state.removeTaskFromSorting(taskId);
+        this.state.addToHistory(beforeState);
         
         // Check if sorting is complete
         if (this.state.sortState.unSorted.length === 0 && this.state.sortState.currentItem === null) {

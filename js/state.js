@@ -144,6 +144,11 @@ class AppState {
         this.rankGroups = lastState.rankGroups;
         this.taskToGroup = lastState.taskToGroup;
         
+        // Handle remove/restore actions
+        if (lastState.action === 'remove' && lastState.removedTasks) {
+            this.removedTasks = lastState.removedTasks;
+        }
+        
         return lastState;
     }
 
