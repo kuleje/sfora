@@ -458,6 +458,148 @@ button:active {
     font-weight: 500;
 }
 
+.task-actions {
+    margin-top: 0.8rem;
+    padding-top: 0.8rem;
+    border-top: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: center;
+}
+
+.remove-task-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8em;
+    transition: background-color 0.2s ease;
+    margin: 0;
+}
+
+.remove-task-btn:hover {
+    background-color: #c82333;
+    transform: none;
+}
+
+.remove-task-btn:active {
+    transform: none;
+    background-color: #bd2130;
+}
+
+.removed-tasks-section {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    border: 2px solid #dc3545;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+}
+
+.removed-tasks-header, .removed-tasks-title {
+    color: #dc3545;
+    margin: 0 0 1rem 0;
+    font-size: 1.2em;
+    text-align: center;
+}
+
+.removed-tasks-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.removed-tasks-list li {
+    margin: 0.5rem 0;
+    padding: 0.8rem;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-left: 4px solid #dc3545;
+}
+
+.removed-assignee-group {
+    border-color: #dc3545;
+    opacity: 0.8;
+}
+
+.removed-assignee-header {
+    background-color: #dc3545;
+}
+
+.removed-task-list li {
+    border-left: 4px solid #dc3545;
+}
+
+.removed-badge {
+    background-color: #dc3545;
+    color: white;
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.7em;
+    font-weight: bold;
+    text-align: center;
+}
+
+.restore-task-btn {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8em;
+    margin-left: auto;
+    transition: background-color 0.2s ease;
+}
+
+.restore-task-btn:hover {
+    background-color: #0056b3;
+    transform: none;
+}
+
+.restore-task-btn:active {
+    transform: none;
+    background-color: #004085;
+}
+
+/* Debug Controls */
+.debug-controls {
+    margin: 1rem 0;
+    padding: 1rem;
+    background-color: #fff3cd;
+    border: 2px dashed #ffc107;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.debug-button {
+    background-color: #ffc107;
+    color: #212529;
+    border: 2px solid #ffc107;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    margin: 0;
+}
+
+.debug-button:hover {
+    background-color: #ffca2c;
+    border-color: #ffca2c;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3);
+}
+
+.debug-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(255, 193, 7, 0.3);
+}
 .task-comment:focus {
     outline: none;
     border-color: #4a90e2;
@@ -631,5 +773,37 @@ ol#sorted-list li {
         align-self: flex-end;
         width: auto;
         padding: 6px 10px;
+    }
+    
+    .remove-task-btn {
+        padding: 5px 10px;
+        font-size: 0.75em;
+    }
+    
+    .removed-tasks-section {
+        padding: 1rem;
+        margin-top: 1.5rem;
+    }
+    
+    .removed-tasks-list li {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.3rem;
+    }
+    
+    .restore-task-btn {
+        align-self: flex-end;
+        margin-left: 0;
+        margin-top: 0.3rem;
+    }
+    
+    .debug-controls {
+        padding: 0.8rem;
+        margin: 0.8rem 0;
+    }
+    
+    .debug-button {
+        padding: 8px 16px;
+        font-size: 0.8em;
     }
 }

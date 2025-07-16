@@ -44,6 +44,7 @@ document.addEventListener("DOMContentLoaded", function() {
     let taskUrlBaseValue = 'https://app.clickup.com/t/4540126/';
     let rawData = [];
     let taskComments = {};
+    let removedTasks = new Set(); // Track removed tasks
     let actionHistory = []; // Track actions for undo functionality // Store comments for each task comparison
 
     function loadState() {
@@ -58,6 +59,7 @@ document.addEventListener("DOMContentLoaded", function() {
             taskUrlBaseValue = state.taskUrlBase || 'https://app.clickup.com/t/4540126/';
             rawData = state.rawData;
             taskComments = state.taskComments || {};
+            removedTasks = new Set(state.removedTasks || []);
             
             // Load rank groups
             if (state.rankGroups && state.taskToGroup) {
@@ -104,6 +106,7 @@ document.addEventListener("DOMContentLoaded", function() {
             taskUrlBase: taskUrlBaseValue, 
             rawData, 
             taskComments,
+            removedTasks: Array.from(removedTasks),
             rankGroups: Array.from(rankGroups.entries()),
             taskToGroup: Array.from(taskToGroup.entries()),
             actionHistory: actionHistory
@@ -416,6 +419,9 @@ document.addEventListener("DOMContentLoaded", function() {
                     <button id="save-comment-${taskId}" class="save-comment-btn" type="button">Save Note</button>
                 </div>
                 <div id="comment-status-${taskId}" class="comment-status"></div>
+                <div class="task-actions">
+                    <button id="remove-task-${taskId}" class="remove-task-btn" type="button">Remove from Sorting</button>
+                </div>
             </div>
         `;
         
@@ -459,6 +465,17 @@ document.addEventListener("DOMContentLoaded", function() {
         
         saveButton.addEventListener('click', function(e) {
             e.stopPropagation(); // Already handled above, but being explicit
+        });
+        
+        // Add event listener for remove task button
+        const removeButton = element.querySelector(`#remove-task-${taskId}`);
+        removeButton.addEventListener('click', function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            
+            if (confirm('Remove this task from sorting? It will appear in a separate section in the final results.')) {
+                removeTaskFromSorting(taskId);
+            }
         });
         
         // Add event listener for group expand button if it exists
@@ -570,6 +587,76 @@ document.addEventListener("DOMContentLoaded", function() {
             undoButton.disabled = true;
             undoButton.textContent = 'Undo Last Choice';
         }
+    }
+
+    function removeTaskFromSorting(taskId) {
+        log(`Removing task ${taskId} from sorting`);
+        
+        // Add to removed tasks set
+        removedTasks.add(taskId);
+        
+        // If this is the current item being sorted, move to next
+        if (sortState.currentItem === taskId) {
+            sortState.currentItem = null;
+        }
+        
+        // Remove from unsorted list
+        const unSortedIndex = sortState.unSorted.indexOf(taskId);
+        if (unSortedIndex > -1) {
+            sortState.unSorted.splice(unSortedIndex, 1);
+        }
+        
+        // Remove from sorted groups and clean up group mappings
+        const groupId = taskToGroup.get(taskId);
+        if (groupId && rankGroups.has(groupId)) {
+            const group = rankGroups.get(groupId);
+            const taskIndex = group.indexOf(taskId);
+            if (taskIndex > -1) {
+                group.splice(taskIndex, 1);
+            }
+            
+            // If group is now empty, remove it entirely
+            if (group.length === 0) {
+                rankGroups.delete(groupId);
+                const sortedIndex = sortState.sortedGroups.indexOf(groupId);
+                if (sortedIndex > -1) {
+                    sortState.sortedGroups.splice(sortedIndex, 1);
+                }
+            }
+            
+            // Clean up task-to-group mapping
+            taskToGroup.delete(taskId);
+        }
+        
+        saveState();
+        
+        // Continue sorting or show results if done
+        if (sortState.unSorted.length === 0 && sortState.currentItem === null) {
+            sortState.done = true;
+            displayResults();
+        } else {
+            continueSort();
+        }
+    }
+    
+    function restoreTaskToSorting(taskId) {
+        log(`Restoring task ${taskId} to sorting`);
+        
+        // Remove from removed tasks set
+        removedTasks.delete(taskId);
+        
+        // Add back to unsorted list
+        sortState.unSorted.push(taskId);
+        
+        // Recreate individual group for this task
+        const groupId = `single_${taskId}`;
+        rankGroups.set(groupId, [taskId]);
+        taskToGroup.set(taskId, groupId);
+        
+        saveState();
+        
+        // Refresh the results display
+        renderResults();
     }
 
     function handleEqualRank(currentTaskId, existingTaskId, insertIndex) {
