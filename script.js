@@ -708,10 +708,14 @@ document.addEventListener("DOMContentLoaded", function() {
         
         const shuffledTasks = [...allTasks].sort(() => Math.random() - 0.5);
         
-        // Randomly remove 10-20% of tasks
-        const removeCount = Math.floor(shuffledTasks.length * (0.1 + Math.random() * 0.1));
+        // Randomly remove 10-20% of tasks (minimum 1 task)
+        const removePercentage = 0.1 + Math.random() * 0.1; // 10-20%
+        const removeCount = Math.max(1, Math.floor(shuffledTasks.length * removePercentage));
+        console.log(`Will remove ${removeCount} tasks out of ${shuffledTasks.length} total (${(removePercentage * 100).toFixed(1)}%)`);
+        
         for (let i = 0; i < removeCount; i++) {
             removedTasks.add(shuffledTasks[i].id);
+            console.log(`Removed task ${shuffledTasks[i].id}: ${shuffledTasks[i].data[columnMapping.name] || 'Unnamed'}`);
         }
         
         // Get remaining tasks for ranking
@@ -885,6 +889,43 @@ document.addEventListener("DOMContentLoaded", function() {
         });
         
         sortedResults.appendChild(ol);
+        
+        // Add removed tasks section if any exist
+        if (removedTasks.size > 0) {
+            const removedSection = document.createElement('div');
+            removedSection.className = 'removed-tasks-section';
+            removedSection.innerHTML = `
+                <h3 class="removed-tasks-header">🚫 Removed from Sorting (${removedTasks.size} task${removedTasks.size !== 1 ? 's' : ''})</h3>
+            `;
+            
+            const removedList = document.createElement('ul');
+            removedList.className = 'removed-tasks-list';
+            
+            removedTasks.forEach(taskId => {
+                const task = allTasks.find(t => t.id === taskId);
+                const assignee = parseAssignee(task.data[columnMapping.assignee]);
+                const comment = taskComments[taskId] || '';
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span class="task-name-result">${task.data[columnMapping.name] || 'Unnamed task'}</span>
+                    ${assignee ? `<span class="assignee-badge">${assignee}</span>` : ''}
+                    ${comment ? `<div class="task-comment-preview">${comment}</div>` : ''}
+                    <button class="restore-task-btn" data-task-id="${taskId}">Restore</button>
+                `;
+                removedList.appendChild(li);
+            });
+            
+            removedSection.appendChild(removedList);
+            sortedResults.appendChild(removedSection);
+            
+            // Add restore functionality
+            removedSection.addEventListener('click', function(e) {
+                if (e.target.classList.contains('restore-task-btn')) {
+                    const taskId = parseInt(e.target.getAttribute('data-task-id'));
+                    restoreTaskToSorting(taskId);
+                }
+            });
+        }
     }
     
     function renderGroupedByAssignee() {
@@ -949,6 +990,77 @@ document.addEventListener("DOMContentLoaded", function() {
             groupDiv.appendChild(ol);
             sortedResults.appendChild(groupDiv);
         });
+        
+        // Add removed tasks section if any exist
+        if (removedTasks.size > 0) {
+            // Group removed tasks by assignee
+            const removedAssigneeGroups = new Map();
+            
+            removedTasks.forEach(taskId => {
+                const task = allTasks.find(t => t.id === taskId);
+                const assignee = parseAssignee(task.data[columnMapping.assignee]) || 'Unassigned';
+                
+                if (!removedAssigneeGroups.has(assignee)) {
+                    removedAssigneeGroups.set(assignee, []);
+                }
+                
+                removedAssigneeGroups.get(assignee).push(task);
+            });
+            
+            const removedSection = document.createElement('div');
+            removedSection.className = 'removed-tasks-section';
+            removedSection.innerHTML = `
+                <h2 class="removed-tasks-title">🚫 Removed from Sorting</h2>
+            `;
+            
+            // Sort removed assignees the same way
+            const sortedRemovedAssignees = Array.from(removedAssigneeGroups.keys()).sort((a, b) => {
+                if (a === 'Unassigned') return 1;
+                if (b === 'Unassigned') return -1;
+                return a.localeCompare(b);
+            });
+            
+            sortedRemovedAssignees.forEach(assignee => {
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'assignee-group removed-assignee-group';
+                
+                const header = document.createElement('h3');
+                header.className = 'assignee-header removed-assignee-header';
+                header.innerHTML = `
+                    ${assignee === 'Unassigned' ? '❓' : '👤'} ${assignee} 
+                    <span class="task-count">(${removedAssigneeGroups.get(assignee).length} removed task${removedAssigneeGroups.get(assignee).length !== 1 ? 's' : ''})</span>
+                `;
+                groupDiv.appendChild(header);
+                
+                const ul = document.createElement('ul');
+                ul.className = 'assignee-task-list removed-task-list';
+                
+                removedAssigneeGroups.get(assignee).forEach(task => {
+                    const comment = taskComments[task.id] || '';
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <span class="removed-badge">REMOVED</span>
+                        <span class="task-name-result">${task.data[columnMapping.name] || 'Unnamed task'}</span>
+                        ${comment ? `<div class="task-comment-preview">${comment}</div>` : ''}
+                        <button class="restore-task-btn" data-task-id="${task.id}">Restore</button>
+                    `;
+                    ul.appendChild(li);
+                });
+                
+                groupDiv.appendChild(ul);
+                removedSection.appendChild(groupDiv);
+            });
+            
+            sortedResults.appendChild(removedSection);
+            
+            // Add restore functionality
+            removedSection.addEventListener('click', function(e) {
+                if (e.target.classList.contains('restore-task-btn')) {
+                    const taskId = parseInt(e.target.getAttribute('data-task-id'));
+                    restoreTaskToSorting(taskId);
+                }
+            });
+        }
     }
 
     function exportToCSV() {
