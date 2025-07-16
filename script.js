@@ -777,7 +777,9 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
         
-        log(`Random ranking applied: ${sortState.sortedGroups.length} groups, ${removedTasks.size} removed tasks`);\n        console.log('Removed tasks:', Array.from(removedTasks));\n        console.log('All tasks:', allTasks.map(t => t.id));
+        log(`Random ranking applied: ${sortState.sortedGroups.length} groups, ${removedTasks.size} removed tasks`);
+        console.log('Removed tasks:', Array.from(removedTasks));
+        console.log('All tasks:', allTasks.map(t => t.id));
         
         saveState();
         displayResults();
