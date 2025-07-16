@@ -91,22 +91,45 @@ class SortingEngine {
 
     // Calculate progress information
     calculateProgress() {
-        const totalTasks = this.state.allTasks.length;
+        // Calculate active tasks (excluding removed ones)
+        const activeTasks = this.state.allTasks.length - this.state.removedTasks.size;
         const sortedCount = this.state.sortState.sortedGroups.length;
         const totalSortedTasks = this.state.sortState.sortedGroups.reduce((count, groupId) => 
             count + this.state.rankGroups.get(groupId).length, 0);
-        const progress = totalTasks > 0 ? (totalSortedTasks / totalTasks) * 100 : 0;
+        const progress = activeTasks > 0 ? (totalSortedTasks / activeTasks) * 100 : 0;
         
-        // Estimate remaining comparisons using binary search worst case
+        // Calculate remaining tasks
         const remainingTasks = this.state.sortState.unSorted.length + (this.state.sortState.currentItem ? 1 : 0);
-        const avgComparisons = Math.ceil(Math.log2(sortedCount + 1));
-        const estimatedRemaining = remainingTasks * avgComparisons;
+        
+        // Determine if we should show estimation or calibration message
+        const totalChoicesMade = this.state.actionHistory.filter(action => 
+            action.choice === 'A' || action.choice === 'B' || action.choice === 'Equal').length;
+        
+        let estimatedRemaining;
+        let showEstimation = true;
+        
+        // Show "calculating..." for first few comparisons or when we have very few sorted items
+        if (totalChoicesMade < 3 || sortedCount < 3) {
+            showEstimation = false;
+            estimatedRemaining = 0;
+        } else {
+            // Use actual comparison data for better estimation
+            const avgComparisonsPerTask = totalChoicesMade / Math.max(1, totalSortedTasks);
+            
+            // Adjust for binary search efficiency (gets more efficient as sorted list grows)
+            const efficiencyFactor = Math.log2(sortedCount + 1) / Math.max(1, avgComparisonsPerTask);
+            const adjustedComparisons = Math.max(1, Math.ceil(Math.log2(sortedCount + 1) * efficiencyFactor));
+            
+            estimatedRemaining = remainingTasks * adjustedComparisons;
+        }
         
         return {
             progress: Math.round(progress),
             sortedTasks: totalSortedTasks,
-            totalTasks: totalTasks,
-            estimatedRemaining: estimatedRemaining
+            totalTasks: activeTasks,
+            estimatedRemaining: estimatedRemaining,
+            showEstimation: showEstimation,
+            totalChoicesMade: totalChoicesMade
         };
     }
 

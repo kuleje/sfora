@@ -262,7 +262,13 @@ class UIRenderer {
         const progressText = document.getElementById('progress-text');
         
         progressBar.style.width = `${progressInfo.progress}%`;
-        progressText.textContent = `Sorted ${progressInfo.sortedTasks} of ${progressInfo.totalTasks} tasks (~${progressInfo.estimatedRemaining} comparisons left)`;
+        
+        // Show different messages based on estimation availability
+        if (progressInfo.showEstimation) {
+            progressText.textContent = `Sorted ${progressInfo.sortedTasks} of ${progressInfo.totalTasks} tasks (~${progressInfo.estimatedRemaining} comparisons left)`;
+        } else {
+            progressText.textContent = `Sorted ${progressInfo.sortedTasks} of ${progressInfo.totalTasks} tasks (calculating estimate...)`;
+        }
     }
 
     // Display final results
