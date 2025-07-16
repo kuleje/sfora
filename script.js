@@ -35,6 +35,14 @@ document.addEventListener("DOMContentLoaded", function() {
     const exportPartialButton = document.getElementById('export-partial');
     const progressBar = document.getElementById('progress-bar');
     const progressText = document.getElementById('progress-text');
+    
+    // Debug elements
+    const debugControlsColumn = document.getElementById('debug-controls');
+    const debugControlsSorting = document.getElementById('debug-controls-sorting');
+    const debugControlsResults = document.getElementById('debug-controls-results');
+    const applyRandomRanksButton = document.getElementById('apply-random-ranks-button');
+    const applyRandomRanksSortingButton = document.getElementById('apply-random-ranks-sorting-button');
+    const applyRandomRanksResultsButton = document.getElementById('apply-random-ranks-results-button');
 
     let allTasks = [];
     let sortState = {};
@@ -45,7 +53,24 @@ document.addEventListener("DOMContentLoaded", function() {
     let rawData = [];
     let taskComments = {};
     let removedTasks = new Set(); // Track removed tasks
+    let debugMode = false; // Debug mode flag
     let actionHistory = []; // Track actions for undo functionality // Store comments for each task comparison
+
+    // Check for debug mode
+    function checkDebugMode() {
+        const urlParams = new URLSearchParams(window.location.search);
+        debugMode = urlParams.get('debug') === 'true' || urlParams.get('debug') === 'True';
+        if (debugMode) {
+            log('Debug mode enabled');
+            showDebugControls();
+        }
+    }
+    
+    function showDebugControls() {
+        if (debugControlsColumn) debugControlsColumn.style.display = 'block';
+        if (debugControlsSorting) debugControlsSorting.style.display = 'block';
+        if (debugControlsResults) debugControlsResults.style.display = 'block';
+    }
 
     function loadState() {
         log('Checking for saved state...');
@@ -658,6 +683,105 @@ document.addEventListener("DOMContentLoaded", function() {
         // Refresh the results display
         renderResults();
     }
+    
+    function applyRandomRanks() {
+        log('Applying random ranks for testing...');
+        
+        if (!allTasks || allTasks.length === 0) {
+            alert('No tasks loaded. Please load a CSV file first.');
+            return;
+        }
+        
+        // Reset state
+        sortState = {
+            sortedGroups: [],
+            unSorted: [],
+            currentItem: null,
+            searchBounds: { low: 0, high: 0 },
+            done: true
+        };
+        
+        rankGroups.clear();
+        taskToGroup.clear();
+        removedTasks.clear();
+        actionHistory = [];
+        
+        const shuffledTasks = [...allTasks].sort(() => Math.random() - 0.5);
+        
+        // Randomly remove 10-20% of tasks
+        const removeCount = Math.floor(shuffledTasks.length * (0.1 + Math.random() * 0.1));
+        for (let i = 0; i < removeCount; i++) {
+            removedTasks.add(shuffledTasks[i].id);
+        }
+        
+        // Get remaining tasks for ranking
+        const tasksToRank = shuffledTasks.filter(task => !removedTasks.has(task.id));
+        
+        // Create some groups (ties) - about 20% of tasks will be in groups
+        const groupCount = Math.floor(tasksToRank.length * 0.2);
+        const groupedTasks = new Set();
+        
+        // Create 2-4 groups with 2-3 tasks each
+        for (let g = 0; g < Math.min(groupCount, 4); g++) {
+            const groupSize = 2 + Math.floor(Math.random() * 2); // 2-3 tasks
+            const availableTasks = tasksToRank.filter(task => !groupedTasks.has(task.id));
+            
+            if (availableTasks.length < groupSize) break;
+            
+            const groupId = `debug_group_${g}`;
+            const groupTaskIds = [];
+            
+            // Select random tasks for this group
+            for (let i = 0; i < groupSize; i++) {
+                const randomIndex = Math.floor(Math.random() * availableTasks.length);
+                const task = availableTasks.splice(randomIndex, 1)[0];
+                groupTaskIds.push(task.id);
+                groupedTasks.add(task.id);
+                taskToGroup.set(task.id, groupId);
+            }
+            
+            rankGroups.set(groupId, groupTaskIds);
+            sortState.sortedGroups.push(groupId);
+        }
+        
+        // Create individual groups for remaining tasks
+        const remainingTasks = tasksToRank.filter(task => !groupedTasks.has(task.id));
+        remainingTasks.forEach(task => {
+            const groupId = `single_${task.id}`;
+            rankGroups.set(groupId, [task.id]);
+            taskToGroup.set(task.id, groupId);
+            sortState.sortedGroups.push(groupId);
+        });
+        
+        // Shuffle the final order
+        sortState.sortedGroups.sort(() => Math.random() - 0.5);
+        
+        // Add some random comments
+        const commentExamples = [
+            'High priority due to client requirements',
+            'Blocked by external dependency',
+            'Quick win - low effort, high impact',
+            'Duplicate of another task',
+            'Needs more investigation',
+            'Critical bug fix',
+            'Nice to have feature',
+            'Requires design review',
+            'Technical debt cleanup',
+            'User requested enhancement'
+        ];
+        
+        allTasks.forEach(task => {
+            if (Math.random() < 0.3) { // 30% chance of having a comment
+                const randomComment = commentExamples[Math.floor(Math.random() * commentExamples.length)];
+                taskComments[task.id] = randomComment;
+            }
+        });
+        
+        log(`Random ranking applied: ${sortState.sortedGroups.length} groups, ${removedTasks.size} removed tasks`);
+        
+        saveState();
+        displayResults();
+    }
 
     function handleEqualRank(currentTaskId, existingTaskId, insertIndex) {
         log(`Marking tasks ${currentTaskId} and ${existingTaskId} as equal rank`);
@@ -938,6 +1062,17 @@ document.addEventListener("DOMContentLoaded", function() {
     restartButton.addEventListener('click', reset);
     restartSortingButton.addEventListener('click', reset);
     undoButton.addEventListener('click', undoLastChoice);
+    
+    // Debug button event listeners
+    if (applyRandomRanksButton) {
+        applyRandomRanksButton.addEventListener('click', applyRandomRanks);
+    }
+    if (applyRandomRanksSortingButton) {
+        applyRandomRanksSortingButton.addEventListener('click', applyRandomRanks);
+    }
+    if (applyRandomRanksResultsButton) {
+        applyRandomRanksResultsButton.addEventListener('click', applyRandomRanks);
+    }
 
     // Function to toggle group details
     window.toggleGroupDetails = function(taskId, button) {
@@ -951,5 +1086,8 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     };
 
-    window.addEventListener('load', loadState);
+    window.addEventListener('load', () => {
+        checkDebugMode();
+        loadState();
+    });
 });
