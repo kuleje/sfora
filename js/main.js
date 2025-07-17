@@ -40,6 +40,9 @@ document.addEventListener("DOMContentLoaded", function() {
     function initialize() {
         log('Initializing application...');
         
+        // Initialize UI modules
+        uiRenderer.initialize();
+        
         // Check for debug mode
         if (debugUtils.checkDebugMode()) {
             uiRenderer.showDebugControls();
@@ -56,9 +59,18 @@ document.addEventListener("DOMContentLoaded", function() {
     function loadState() {
         const savedState = storageManager.loadState();
         if (savedState && appState.allTasks.length > 0) {
-            uiRenderer.showSection('setup-area');
             if (!appState.sortState.done) {
-                uiRenderer.showSection('sorting-area');
+                // Show sorting area and hide others
+                const setupArea = document.getElementById('setup-area');
+                const columnSelectionArea = document.getElementById('column-selection-area');
+                const sortingArea = document.getElementById('sorting-area');
+                const resultsArea = document.getElementById('results-area');
+                
+                setupArea.style.display = 'none';
+                columnSelectionArea.style.display = 'none';
+                sortingArea.style.display = 'block';
+                resultsArea.style.display = 'none';
+                
                 log('Resuming sort...');
                 continueSort();
             } else {
@@ -101,7 +113,17 @@ document.addEventListener("DOMContentLoaded", function() {
             
             csvHandler.initializeTasksFromCSV();
             
-            uiRenderer.showSection('sorting-area');
+            // Show sorting area and hide others
+            const setupArea = document.getElementById('setup-area');
+            const columnSelectionArea = document.getElementById('column-selection-area');
+            const sortingArea = document.getElementById('sorting-area');
+            const resultsArea = document.getElementById('results-area');
+            
+            setupArea.style.display = 'none';
+            columnSelectionArea.style.display = 'none';
+            sortingArea.style.display = 'block';
+            resultsArea.style.display = 'none';
+            
             log('Starting sort...');
             continueSort();
         } catch (error) {

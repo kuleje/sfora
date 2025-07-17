@@ -109,6 +109,18 @@ class UIRenderer {
             }
         }
         
+        // Get selected design and ranking style dropdowns
+        const designSelect = document.getElementById('result-design-select');
+        const rankingStyleSelect = document.getElementById('ranking-style-select');
+
+        // Set initial values of dropdowns based on loaded preferences
+        if (designSelect) {
+            designSelect.value = this.selectedDesign;
+        }
+        if (rankingStyleSelect) {
+            rankingStyleSelect.value = this.rankingStyle;
+        }
+        
         this.renderWithDesign(this.selectedDesign, groupByAssignee);
     }
 
@@ -242,6 +254,56 @@ class UIRenderer {
     // Initialize UI modules
     initialize() {
         this.uiSetup.initialize();
+        this.attachDesignEventListeners();
+    }
+
+    // Attach event listeners for design and ranking style selectors
+    attachDesignEventListeners() {
+        const designSelect = document.getElementById('result-design-select');
+        const rankingStyleSelect = document.getElementById('ranking-style-select');
+
+        // Add event listener for design changes
+        if (designSelect) {
+            designSelect.addEventListener('change', () => {
+                this.selectedDesign = designSelect.value;
+                localStorage.setItem('sfora.resultDesign', this.selectedDesign);
+                
+                // Update visibility of results-options div
+                const resultsOptions = document.getElementById('results-options');
+                if (resultsOptions) {
+                    if (this.selectedDesign === 'tabbed') {
+                        resultsOptions.style.display = 'none';
+                    } else {
+                        resultsOptions.style.display = 'block';
+                    }
+                }
+
+                // Check if we're in results view and re-render
+                const resultsArea = document.getElementById('results-area');
+                if (resultsArea && resultsArea.style.display === 'block') {
+                    const groupByCheckbox = document.getElementById('group-by-assignee');
+                    const groupByAssignee = groupByCheckbox ? groupByCheckbox.checked : false;
+                    this.renderWithDesign(this.selectedDesign, groupByAssignee);
+                }
+            });
+        }
+
+        // Add event listener for ranking style changes
+        if (rankingStyleSelect) {
+            rankingStyleSelect.addEventListener('change', () => {
+                this.rankingStyle = rankingStyleSelect.value;
+                this.setRankingStyle(this.rankingStyle);
+                localStorage.setItem('sfora.rankingStyle', this.rankingStyle);
+                
+                // Check if we're in results view and re-render
+                const resultsArea = document.getElementById('results-area');
+                if (resultsArea && resultsArea.style.display === 'block') {
+                    const groupByCheckbox = document.getElementById('group-by-assignee');
+                    const groupByAssignee = groupByCheckbox ? groupByCheckbox.checked : false;
+                    this.renderWithDesign(this.selectedDesign, groupByAssignee);
+                }
+            });
+        }
     }
 
     // Set ranking style and propagate to modules

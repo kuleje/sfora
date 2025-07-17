@@ -53,6 +53,7 @@ class UITabs {
     // Render tabbed interface
     renderTabbedInterface(groupByAssignee) {
         const sortedResults = document.getElementById('sorted-results');
+        sortedResults.innerHTML = '';
         
         // Create tab container
         const tabContainer = document.createElement('div');
