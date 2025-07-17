@@ -307,6 +307,7 @@ class UIRenderer {
         const designSelect = document.getElementById('result-design-select');
         // Get selected ranking style dropdown
         const rankingStyleSelect = document.getElementById('ranking-style-select');
+        const resultsOptionsDiv = document.getElementById('results-options');
 
         // Set initial values of dropdowns based on loaded preferences
         if (designSelect) {
@@ -314,6 +315,15 @@ class UIRenderer {
         }
         if (rankingStyleSelect) {
             rankingStyleSelect.value = this.rankingStyle;
+        }
+
+        // Hide/show results-options div based on selected design
+        if (resultsOptionsDiv) {
+            if (this.selectedDesign === 'tabbed') {
+                resultsOptionsDiv.style.display = 'none';
+            } else {
+                resultsOptionsDiv.style.display = 'block';
+            }
         }
 
         // Render based on selected design
@@ -324,6 +334,16 @@ class UIRenderer {
             designSelect.addEventListener('change', () => {
                 this.selectedDesign = designSelect.value;
                 localStorage.setItem('sfora.resultDesign', this.selectedDesign);
+                
+                // Update visibility of results-options div
+                if (resultsOptionsDiv) {
+                    if (this.selectedDesign === 'tabbed') {
+                        resultsOptionsDiv.style.display = 'none';
+                    } else {
+                        resultsOptionsDiv.style.display = 'block';
+                    }
+                }
+
                 this.renderWithDesign(this.selectedDesign, groupByAssignee);
             });
         }
