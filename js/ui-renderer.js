@@ -4,6 +4,25 @@ class UIRenderer {
         this.state = state;
         this.csvHandler = csvHandler;
         this.log = logger;
+        this.selectedDesign = 'tabbed'; // Default value
+        this.rankingStyle = 'range'; // Default value
+        this._loadPreferences();
+    }
+
+    _loadPreferences() {
+        try {
+            const savedDesign = localStorage.getItem('sfora.resultDesign');
+            const savedRankingStyle = localStorage.getItem('sfora.rankingStyle');
+
+            if (savedDesign) {
+                this.selectedDesign = savedDesign;
+            }
+            if (savedRankingStyle) {
+                this.rankingStyle = savedRankingStyle;
+            }
+        } catch (e) {
+            console.error("Error loading preferences from localStorage:", e);
+        }
     }
 
     // Display column selection UI
@@ -284,21 +303,28 @@ class UIRenderer {
         
         sortedResults.innerHTML = '';
         
-        // Get selected design
+        // Get selected design dropdown
         const designSelect = document.getElementById('result-design-select');
-        const selectedDesign = designSelect ? designSelect.value : 'tabbed';
-        
-        // Get selected ranking style
+        // Get selected ranking style dropdown
         const rankingStyleSelect = document.getElementById('ranking-style-select');
-        this.rankingStyle = rankingStyleSelect ? rankingStyleSelect.value : 'range';
+
+        // Set initial values of dropdowns based on loaded preferences
+        if (designSelect) {
+            designSelect.value = this.selectedDesign;
+        }
+        if (rankingStyleSelect) {
+            rankingStyleSelect.value = this.rankingStyle;
+        }
 
         // Render based on selected design
-        this.renderWithDesign(selectedDesign, groupByAssignee);
+        this.renderWithDesign(this.selectedDesign, groupByAssignee);
         
         // Add event listener for design changes
         if (designSelect) {
             designSelect.addEventListener('change', () => {
-                this.renderWithDesign(designSelect.value, groupByAssignee);
+                this.selectedDesign = designSelect.value;
+                localStorage.setItem('sfora.resultDesign', this.selectedDesign);
+                this.renderWithDesign(this.selectedDesign, groupByAssignee);
             });
         }
 
@@ -306,7 +332,8 @@ class UIRenderer {
         if (rankingStyleSelect) {
             rankingStyleSelect.addEventListener('change', () => {
                 this.rankingStyle = rankingStyleSelect.value;
-                this.renderWithDesign(designSelect.value, groupByAssignee);
+                localStorage.setItem('sfora.rankingStyle', this.rankingStyle);
+                this.renderWithDesign(this.selectedDesign, groupByAssignee);
             });
         }
     }
