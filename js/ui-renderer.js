@@ -6,7 +6,8 @@ class UIRenderer {
         this.log = logger;
         this.selectedDesign = 'tabbed'; // Default value
         this.rankingStyle = 'range'; // Default value
-        this.quarterlyStatus = new QuarterlyStatus();
+        this.uiComparison = new UIComparison(state, csvHandler, logger);
+        this.uiQuarterly = new UIQuarterly(state, csvHandler, logger);
         this._loadPreferences();
     }
 
@@ -80,40 +81,7 @@ class UIRenderer {
 
     // Display task comparison UI
     displayComparison(task1Id, task2Id) {
-        this.log(`displayComparison called with: ${task1Id}, ${task2Id}`);
-        
-        const task1 = this.state.getTask(task1Id);
-        const task2 = this.state.getTask(task2Id);
-        
-        if (!task1 || !task2) {
-            this.log(`Error: Task not found`);
-            return;
-        }
-
-        const taskAElement = document.getElementById('task-a');
-        const taskBElement = document.getElementById('task-b');
-        const qrAElement = document.getElementById('qr-a');
-        const qrBElement = document.getElementById('qr-b');
-
-        // Clear previous content
-        taskAElement.innerHTML = '';
-        taskBElement.innerHTML = '';
-        qrAElement.innerHTML = '';
-        qrBElement.innerHTML = '';
-
-        // Get group info
-        const task1GroupId = this.state.getTaskGroupId(task1Id);
-        const task2GroupId = this.state.getTaskGroupId(task2Id);
-        const task1Group = this.state.getGroup(task1GroupId);
-        const task2Group = this.state.getGroup(task2GroupId);
-
-        // Display task content
-        this.displayTaskContent(task1, taskAElement, task1Group);
-        this.displayTaskContent(task2, taskBElement, task2Group);
-        
-        // Display QR codes
-        this.displayTaskQR(task1, qrAElement);
-        this.displayTaskQR(task2, qrBElement);
+        this.uiComparison.displayComparison(task1Id, task2Id);
     }
 
     // Display individual task content
@@ -278,17 +246,7 @@ class UIRenderer {
 
     // Update progress bar
     updateProgress(progressInfo) {
-        const progressBar = document.getElementById('progress-bar');
-        const progressText = document.getElementById('progress-text');
-        
-        progressBar.style.width = `${progressInfo.progress}%`;
-        
-        // Show different messages based on estimation availability
-        if (progressInfo.showEstimation) {
-            progressText.textContent = `Sorted ${progressInfo.sortedTasks} of ${progressInfo.totalTasks} tasks (~${progressInfo.estimatedRemaining} comparisons left)`;
-        } else {
-            progressText.textContent = `Sorted ${progressInfo.sortedTasks} of ${progressInfo.totalTasks} tasks (calculating estimate...)`;
-        }
+        this.uiComparison.updateProgress(progressInfo);
     }
 
     // Display final results
@@ -1096,7 +1054,7 @@ class UIRenderer {
                     this.renderGroupedByAssigneeInTab(tabContent);
                     break;
                 case 'quarterly-status':
-                    this.renderQuarterlyStatusInTab(tabContent);
+                    this.uiQuarterly.renderQuarterlyStatusInTab(tabContent);
                     break;
                 case 'removed-tasks':
                     this.renderRemovedTasksInTab(tabContent);

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Tabbed Interface</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <h1>Test Tabbed Interface</h1>
+        <div id="sorted-results"></div>
+    </div>
+    
+    <script>
+        // Mock data and dependencies for testing
+        const mockState = {
+            sortState: {
+                sortedGroups: [1, 2, 3]
+            },
+            rankGroups: new Map([
+                [1, [1, 2]],
+                [2, [3]],
+                [3, [4]]
+            ]),
+            allTasks: [
+                {id: 1, data: {name: 'Task 1', assignee: 'Alice', description: 'Description 1'}},
+                {id: 2, data: {name: 'Task 2', assignee: 'Bob', description: 'Description 2'}},
+                {id: 3, data: {name: 'Task 3', assignee: 'Alice', description: 'Description 3'}},
+                {id: 4, data: {name: 'Task 4', assignee: '', description: 'Description 4'}}
+            ],
+            removedTasks: new Set([]),
+            taskComments: {},
+            columnMapping: {
+                name: 'name',
+                assignee: 'assignee',
+                description: 'description'
+            }
+        };
+        
+        const mockCsvHandler = {
+            parseAssignee: (assignee) => assignee || null
+        };
+        
+        const mockLogger = (msg) => console.log(msg);
+        
+        // Create UIRenderer instance
+        const uiRenderer = new UIRenderer(mockState, mockCsvHandler, mockLogger);
+        
+        // Test the tabbed interface
+        uiRenderer.renderTabbedInterface(false);
+    </script>
+    
+    <script src="js/ui-renderer.js"></script>
+</body>
+</html>

@@ -1,0 +1,427 @@
+/* Quarterly Status Styles */
+.quarterly-status-container {
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+}
+
+.status-management {
+    background-color: white;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.status-title {
+    color: #495057;
+    font-size: 1.2em;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.existing-statuses {
+    margin-bottom: 1rem;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+}
+
+.status-item:hover {
+    background-color: #e9ecef;
+}
+
+.status-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.status-name {
+    font-weight: 500;
+    font-size: 1em;
+}
+
+.status-color-indicator {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 1px #dee2e6;
+    flex-shrink: 0;
+}
+
+.status-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.status-controls label {
+    font-size: 0.9em;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.tasks-count-input {
+    padding: 0.4rem 0.6rem;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 0.9em;
+    width: 60px;
+    text-align: center;
+}
+
+.tasks-count-input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.delete-status-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    font-size: 0.8em;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.delete-status-btn:hover {
+    background-color: #c82333;
+}
+
+.add-status-section {
+    padding: 1rem 0;
+    border-top: 1px solid #e9ecef;
+    margin-top: 1rem;
+}
+
+.add-new-status-btn {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.add-new-status-btn:hover {
+    background-color: #218838;
+}
+
+.add-new-status-btn:before {
+    content: '+';
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.apply-section {
+    padding: 1rem 0;
+    border-top: 1px solid #e9ecef;
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.overflow-indicator {
+    color: #6c757d;
+    font-style: italic;
+    font-size: 0.9em;
+    padding: 0.4rem 0.8rem;
+    background-color: #f8f9fa;
+    border: 1px dashed #dee2e6;
+    border-radius: 4px;
+}
+
+.quarterly-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background-color: white;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.control-group label {
+    font-weight: 500;
+    color: #495057;
+    font-size: 0.9em;
+}
+
+.control-group input[type="number"] {
+    padding: 0.5rem;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 0.9em;
+    width: 100px;
+}
+
+.add-quarter-btn, .apply-quarterly-btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.add-quarter-btn {
+    background-color: #6c757d;
+    color: white;
+}
+
+.add-quarter-btn:hover {
+    background-color: #5a6268;
+}
+
+.apply-quarterly-btn {
+    background-color: #007bff;
+    color: white;
+}
+
+.apply-quarterly-btn:hover {
+    background-color: #0056b3;
+}
+
+.quarterly-instructions {
+    color: #6c757d;
+    font-style: italic;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background-color: #e3f2fd;
+    border-radius: 6px;
+    border-left: 4px solid #2196f3;
+}
+
+.quarterly-results {
+    min-height: 300px;
+}
+
+.quarterly-distribution {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.quarter-section {
+    background-color: white;
+    border-radius: 8px;
+    padding: 1rem;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.quarter-header {
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #f1f3f4;
+}
+
+.quarter-title {
+    font-size: 1.2em;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.quarter-count {
+    background-color: rgba(0, 0, 0, 0.1);
+    color: #495057;
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: 500;
+}
+
+.assignee-group-quarterly {
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+}
+
+.assignee-header-quarterly {
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.3rem;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.assignee-count {
+    background-color: #6c757d;
+    color: white;
+    padding: 0.1rem 0.4rem;
+    border-radius: 10px;
+    font-size: 0.75em;
+    font-weight: 500;
+}
+
+.tasks-list-quarterly {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.task-item-quarterly {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem;
+    background-color: white;
+    border-radius: 4px;
+    border: 1px solid #e9ecef;
+    transition: background-color 0.2s ease;
+}
+
+.task-item-quarterly:hover {
+    background-color: #f8f9fa;
+}
+
+.task-rank {
+    background-color: #28a745;
+    color: white;
+    padding: 0.2rem 0.4rem;
+    border-radius: 10px;
+    font-size: 0.7em;
+    font-weight: bold;
+    min-width: 1.5rem;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.task-name {
+    flex: 1;
+    font-size: 0.9em;
+    color: #495057;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.task-status {
+    color: white;
+    padding: 0.2rem 0.4rem;
+    border-radius: 10px;
+    font-size: 0.7em;
+    font-weight: 500;
+    text-transform: uppercase;
+    flex-shrink: 0;
+}
+
+.quarterly-export {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background-color: white;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+    text-align: center;
+}
+
+.export-quarterly-btn {
+    background-color: #28a745;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 1em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.export-quarterly-btn:hover {
+    background-color: #218838;
+}
+
+/* Responsive quarterly status */
+@media (max-width: 768px) {
+    .quarterly-controls {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .control-group {
+        flex-direction: row;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .control-group input[type="number"] {
+        width: 80px;
+    }
+    
+    .status-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
+    
+    .status-info {
+        justify-content: center;
+    }
+    
+    .status-controls {
+        justify-content: center;
+    }
+    
+    .tasks-count-input {
+        width: 50px;
+    }
+    
+    .quarter-title {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.3rem;
+    }
+    
+    .assignee-header-quarterly {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.3rem;
+    }
+    
+    .task-item-quarterly {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.3rem;
+    }
+    
+    .task-name {
+        white-space: normal;
+        word-wrap: break-word;
+    }
+}

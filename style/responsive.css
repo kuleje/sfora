@@ -1,0 +1,180 @@
+/* Responsive styles for mobile and tablet devices */
+
+/* Mobile responsiveness for range-based ranking */
+@media (max-width: 768px) {
+    .task-item-ranked {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .rank-range {
+        align-self: flex-start;
+        margin-right: 0;
+    }
+    
+    .assignee-task-list-ranked .task-item-ranked {
+        margin-left: 0.5rem;
+    }
+}
+
+/* Main responsive adjustments */
+@media (max-width: 768px) {
+    #app {
+        padding: 1.5rem;
+    }
+
+    h1 {
+        font-size: 1.8em;
+    }
+
+    button {
+        padding: 10px 20px;
+        font-size: 0.9em;
+    }
+
+    .task {
+        min-width: unset;
+        width: 100%;
+        margin-bottom: 15px;
+    }
+
+    .column-selector {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .column-selector label {
+        text-align: left;
+        margin-bottom: 5px;
+    }
+
+    .column-selector select {
+        width: 100%;
+        max-width: unset;
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+
+    .column-preview {
+        width: 100%;
+        text-align: left;
+    }
+    
+    .comment-input-container {
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .save-comment-btn {
+        align-self: flex-end;
+        width: auto;
+        padding: 6px 10px;
+    }
+    
+    .remove-task-btn {
+        padding: 5px 10px;
+        font-size: 0.75em;
+    }
+    
+    .removed-tasks-section {
+        padding: 1rem;
+        margin-top: 1.5rem;
+    }
+    
+    .removed-tasks-list li {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.3rem;
+    }
+    
+    .restore-task-btn {
+        align-self: flex-end;
+        margin-left: 0;
+        margin-top: 0.3rem;
+    }
+    
+    .debug-controls {
+        padding: 0.8rem;
+        margin: 0.8rem 0;
+    }
+    
+    .debug-button {
+        padding: 8px 16px;
+        font-size: 0.8em;
+    }
+    
+    /* Responsive tabbed interface */
+    .tab-buttons {
+        flex-wrap: wrap;
+        gap: 2px;
+    }
+    
+    .tab-button {
+        padding: 10px 15px;
+        font-size: 0.9em;
+        flex: 1;
+        min-width: 120px;
+    }
+    
+    .tab-content {
+        padding: 0.5rem 0;
+        min-height: 200px;
+    }
+    
+    .empty-tab-message {
+        padding: 2rem 1rem;
+    }
+    
+    .split-view-container {
+        flex-direction: column;
+        min-height: 60vh;
+    }
+    
+    .split-view-main {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .left-panel, .right-panel {
+        min-height: 300px;
+    }
+    
+    .left-panel {
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+    
+    .right-panel {
+        width: 100%;
+    }
+    
+    .panel-resizer {
+        display: none;
+    }
+    
+    .task-list-item {
+        padding: 0.8rem;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+
+    .task-list-item:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .task-list-item.selected {
+        background-color: #e3f2fd;
+        border-left: 4px solid #2196f3;
+    }
+    
+    .task-detail-view {
+        padding: 1rem;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .task-detail-view .task-comment {
+        background-color: white;
+    }
+}

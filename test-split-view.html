@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Split View Test</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <h1>Split View Test</h1>
+        <div id="results-area">
+            <div id="sorted-results"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Mock data for testing split view
+        const mockState = {
+            sortState: {
+                sortedGroups: [101, 102, 103, 104, 105]
+            },
+            rankGroups: new Map([
+                [101, [1]],
+                [102, [2]],
+                [103, [3, 4]], // Tied tasks
+                [104, [5]],
+                [105, [6]]
+            ]),
+            allTasks: [
+                {
+                    id: 1,
+                    data: {
+                        'name': 'Fix login bug',
+                        'description': 'Users are unable to login when their username contains special characters. This is causing a significant impact on user experience.',
+                        'assignee': 'John Doe'
+                    }
+                },
+                {
+                    id: 2,
+                    data: {
+                        'name': 'Implement user dashboard',
+                        'description': 'Create a comprehensive dashboard for users to view their activity, settings, and statistics.',
+                        'assignee': 'Jane Smith'
+                    }
+                },
+                {
+                    id: 3,
+                    data: {
+                        'name': 'Optimize database queries',
+                        'description': 'Several queries are running slowly in production. Need to analyze and optimize them.',
+                        'assignee': 'John Doe'
+                    }
+                },
+                {
+                    id: 4,
+                    data: {
+                        'name': 'Update API documentation',
+                        'description': 'API documentation is outdated and missing several new endpoints.',
+                        'assignee': 'Jane Smith'
+                    }
+                },
+                {
+                    id: 5,
+                    data: {
+                        'name': 'Add mobile responsiveness',
+                        'description': 'The application needs to be fully responsive across all mobile devices.',
+                        'assignee': 'Bob Johnson'
+                    }
+                },
+                {
+                    id: 6,
+                    data: {
+                        'name': 'Security audit',
+                        'description': 'Perform a comprehensive security audit of the application.',
+                        'assignee': ''
+                    }
+                }
+            ],
+            removedTasks: new Set([7]),
+            taskComments: {
+                1: 'High priority - affects user login',
+                3: 'Low priority - performance improvement',
+                5: 'Medium priority - UI enhancement'
+            },
+            columnMapping: {
+                name: 'name',
+                description: 'description',
+                assignee: 'assignee'
+            }
+        };
+        
+        // Mock CSV handler
+        const mockCSVHandler = {
+            parseAssignee: function(assignee) {
+                return assignee || null;
+            }
+        };
+        
+        // Mock logger
+        const mockLogger = function(message) {
+            console.log(message);
+        };
+        
+        // Add mock removed task
+        mockState.allTasks.push({
+            id: 7,
+            data: {
+                'name': 'Removed task',
+                'description': 'This task was removed from sorting',
+                'assignee': 'John Doe'
+            }
+        });
+        
+        // Create UI renderer instance
+        const uiRenderer = new UIRenderer(mockState, mockCSVHandler, mockLogger);
+        
+        // Test split view layout
+        console.log('Testing split view layout...');
+        
+        // Test both flat and grouped views
+        document.addEventListener('DOMContentLoaded', function() {
+            // Test flat view
+            console.log('Rendering flat split view...');
+            uiRenderer.renderSplitViewLayout(false);
+            
+            // Add a button to toggle between views
+            const toggleButton = document.createElement('button');
+            toggleButton.textContent = 'Toggle Group By Assignee';
+            toggleButton.style.margin = '1rem';
+            toggleButton.addEventListener('click', function() {
+                document.getElementById('sorted-results').innerHTML = '';
+                const isGrouped = this.textContent.includes('Group By');
+                uiRenderer.renderSplitViewLayout(!isGrouped);
+                this.textContent = isGrouped ? 'Show Priority Order' : 'Toggle Group By Assignee';
+            });
+            
+            document.getElementById('results-area').insertBefore(toggleButton, document.getElementById('sorted-results'));
+        });
+    </script>
+    
+    <script src="js/ui-renderer.js"></script>
+</body>
+</html>

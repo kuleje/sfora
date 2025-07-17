@@ -1,0 +1,233 @@
+/* Tabbed interface, QR codes, and UI controls */
+
+/* Tabbed Interface Styles */
+.tab-container {
+    margin-top: 1rem;
+}
+
+.tab-buttons {
+    display: flex;
+    border-bottom: 2px solid #e0e0e0;
+    margin-bottom: 1rem;
+    gap: 0;
+}
+
+.tab-button {
+    background-color: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-bottom: none;
+    padding: 12px 20px;
+    cursor: pointer;
+    font-size: 0.95em;
+    font-weight: 500;
+    color: #6c757d;
+    transition: all 0.2s ease;
+    border-radius: 8px 8px 0 0;
+    margin: 0;
+    position: relative;
+}
+
+.tab-button:hover {
+    background-color: #e9ecef;
+    color: #495057;
+    transform: none;
+}
+
+.tab-button.active {
+    background-color: #ffffff;
+    color: #007bff;
+    border-color: #007bff;
+    border-bottom: 2px solid #ffffff;
+    margin-bottom: -2px;
+    z-index: 1;
+}
+
+.tab-button.active:hover {
+    background-color: #ffffff;
+    color: #007bff;
+}
+
+.tab-content {
+    min-height: 300px;
+    padding: 1rem 0;
+}
+
+.empty-tab-message {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #6c757d;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 1px dashed #dee2e6;
+}
+
+.empty-tab-message p {
+    margin: 0.5rem 0;
+}
+
+.empty-tab-hint {
+    font-size: 0.9em;
+    font-style: italic;
+    opacity: 0.8;
+}
+
+/* QR Code Styles */
+#qr-codes-area {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    margin: 1.5rem 0;
+}
+
+.qr-container-bottom {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.qr-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+.qr-code {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.qr-label {
+    font-size: 0.8em;
+    color: #888;
+    margin-top: 0.5rem;
+    text-align: center;
+}
+
+/* Progress Bar */
+#progress-bar-container {
+    width: 100%;
+    background-color: #e0e0e0;
+    border-radius: 5px;
+    margin-top: 1.5rem;
+    height: 25px;
+    overflow: hidden;
+}
+
+#progress-bar {
+    height: 100%;
+    width: 0%;
+    background-color: #2ecc71;
+    border-radius: 5px;
+    transition: width 0.5s ease-out;
+}
+
+#progress-text {
+    margin-top: 0.8rem;
+    font-size: 0.9em;
+    color: #777;
+}
+
+/* Column Selector */
+.column-selector {
+    margin: 1.2rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.column-selector label {
+    flex-basis: 120px;
+    font-weight: bold;
+    text-align: right;
+}
+
+.column-selector select {
+    flex-grow: 1;
+    max-width: 280px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: white;
+}
+
+.column-preview {
+    flex-grow: 2;
+    max-width: 300px;
+    font-style: italic;
+    color: #888;
+    font-size: 0.85em;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Sorted List */
+ol#sorted-list {
+    list-style-type: decimal;
+    padding-left: 20px;
+    text-align: left;
+    margin-top: 1.5rem;
+}
+
+ol#sorted-list li {
+    background-color: #f8f8f8;
+    border: 1px solid #eee;
+    padding: 10px 15px;
+    margin-bottom: 8px;
+    border-radius: 5px;
+    font-size: 1.05em;
+    color: #444;
+}
+
+/* Debug Controls */
+.debug-controls {
+    margin: 1rem 0;
+    padding: 1rem;
+    background-color: #fff3cd;
+    border: 2px dashed #ffc107;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.debug-button {
+    background-color: #ffc107;
+    color: #212529;
+    border: 2px solid #ffc107;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    margin: 0;
+}
+
+.debug-button:hover {
+    background-color: #ffca2c;
+    border-color: #ffca2c;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3);
+}
+
+.debug-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(255, 193, 7, 0.3);
+}
+
+/* Form focus styles */
+.task-comment:focus {
+    outline: none;
+    border-color: #4a90e2;
+    background-color: white;
+    box-shadow: 0 0 0 1px rgba(74, 144, 226, 0.2);
+}
+
+#results-area {
+    margin-top: 2rem;
+}
