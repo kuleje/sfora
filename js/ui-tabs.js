@@ -157,33 +157,67 @@ class UITabs {
             return;
         }
 
-        const ol = document.createElement('ol');
-        ol.className = 'sorted-list';
+        const taskList = document.createElement('div');
+        taskList.className = 'task-list-ranked';
         
+        let currentRank = 1;
         this.state.sortState.sortedGroups.forEach((groupId, groupIndex) => {
             const tasks = this.state.rankGroups.get(groupId);
-            const rank = groupIndex + 1;
+            const rank = currentRank;
             
-            tasks.forEach(taskId => {
+            if (tasks.length > 1) {
+                // Handle tied tasks
+                const tiedContainer = document.createElement('div');
+                tiedContainer.className = 'tied-tasks-container';
+                
+                tasks.forEach(taskId => {
+                    const task = this.state.allTasks.find(t => t.id === taskId);
+                    const assignee = this.csvHandler.parseAssignee(task.data[this.state.columnMapping.assignee]);
+                    const comment = this.state.taskComments[taskId] || '';
+                    
+                    const taskDiv = document.createElement('div');
+                    taskDiv.className = 'task-item-ranked tied';
+                    taskDiv.innerHTML = `
+                        <span class="rank-range">${this.getRankRange(0, tasks.length, rank)}</span>
+                        <div class="task-content">
+                            <div class="task-name-result">${task.data[this.state.columnMapping.name] || 'Unnamed task'}</div>
+                            <div class="task-meta">
+                                ${comment ? `<div class="task-comment-preview">${comment}</div>` : ''}
+                                ${assignee ? `<div class="assignee-badge">${assignee}</div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                    tiedContainer.appendChild(taskDiv);
+                });
+                
+                taskList.appendChild(tiedContainer);
+            } else {
+                // Single task
+                const taskId = tasks[0];
                 const task = this.state.allTasks.find(t => t.id === taskId);
                 const assignee = this.csvHandler.parseAssignee(task.data[this.state.columnMapping.assignee]);
                 const comment = this.state.taskComments[taskId] || '';
-                const li = document.createElement('li');
-                li.innerHTML = `
-                    <div class="task-meta">
-                        <span class="task-name-result">${task.data[this.state.columnMapping.name] || 'Unnamed task'}</span>
-                        ${assignee ? `<span class="assignee-badge">${assignee}</span>` : ''}
+                
+                const taskDiv = document.createElement('div');
+                taskDiv.className = 'task-item-ranked';
+                taskDiv.innerHTML = `
+                    <span class="rank-range">${this.getRankRange(0, 1, rank)}</span>
+                    <div class="task-content">
+                        <div class="task-name-result">${task.data[this.state.columnMapping.name] || 'Unnamed task'}</div>
+                        <div class="task-meta">
+                            ${comment ? `<div class="task-comment-preview">${comment}</div>` : ''}
+                            ${assignee ? `<div class="assignee-badge">${assignee}</div>` : ''}
+                        </div>
                     </div>
-                    ${comment ? `<div class="task-comment-preview">${comment}</div>` : ''}
                 `;
-                if (tasks.length > 1) {
-                    li.innerHTML += `<span class="tie-indicator"> (tied with ${tasks.length - 1} other${tasks.length > 2 ? 's' : ''})</span>`;
-                }
-                ol.appendChild(li);
-            });
+                taskList.appendChild(taskDiv);
+            }
+            
+            // Advance rank by number of tasks in this group
+            currentRank += tasks.length;
         });
         
-        container.appendChild(ol);
+        container.appendChild(taskList);
     }
 
     // Helper method to render grouped by assignee in tab
