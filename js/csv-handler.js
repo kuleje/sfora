@@ -182,6 +182,11 @@ class CSVHandler {
         return Papa.unparse(sortedTasks);
     }
 
+    // Generate CSV from data array
+    generateCSVFromData(data) {
+        return Papa.unparse(data);
+    }
+
     // Download CSV file
     downloadCSV(csvContent, filename = 'sorted_tasks.csv') {
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
