@@ -230,7 +230,16 @@ document.addEventListener("DOMContentLoaded", function() {
         appState.reset();
         
         // Reset UI
-        uiRenderer.showSection('setup-area');
+        const setupArea = document.getElementById('setup-area');
+        const columnSelectionArea = document.getElementById('column-selection-area');
+        const sortingArea = document.getElementById('sorting-area');
+        const resultsArea = document.getElementById('results-area');
+        
+        setupArea.style.display = 'block';
+        columnSelectionArea.style.display = 'none';
+        sortingArea.style.display = 'none';
+        resultsArea.style.display = 'none';
+        
         csvFileInput.value = '';
         updateUndoButton();
         

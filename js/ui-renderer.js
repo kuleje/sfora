@@ -85,8 +85,12 @@ class UIRenderer {
         
         const resultsArea = document.getElementById('results-area');
         const sortingArea = document.getElementById('sorting-area');
+        const setupArea = document.getElementById('setup-area');
+        const columnSelectionArea = document.getElementById('column-selection-area');
         
         sortingArea.style.display = 'none';
+        setupArea.style.display = 'none';
+        columnSelectionArea.style.display = 'none';
         resultsArea.style.display = 'block';
         
         // Hide/show results-options div based on selected design
