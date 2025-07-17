@@ -102,6 +102,25 @@
             <button id="restart">Start Over</button>
             <div id="debug-controls-results" class="debug-controls" style="display: none;">
                 <button id="apply-random-ranks-results-button" class="debug-button">🎲 Apply Random Ranks (Debug)</button>
+                <div class="result-design-selector">
+                    <label for="result-design-select">Result Display Design:</label>
+                    <select id="result-design-select">
+                        <option value="default">Default</option>
+                        <option value="tabbed" selected>Tabbed Interface</option>
+                        <option value="collapsible">Collapsible Sections</option>
+                        <option value="split-view">Split View Layout</option>
+                    </select>
+                </div>
+                <div class="result-design-selector">
+                    <label for="ranking-style-select">Ranking Display Style:</label>
+                    <select id="ranking-style-select">
+                        <option value="range" selected>Range (e.g., 1, 2-3, 4)</option>
+                        <option value="standard">Standard (e.g., 1, 2, 2, 4)</option>
+                        <option value="modified">Modified (e.g., 1, 2, 2, 3)</option>
+                        <option value="ordinal">Ordinal (e.g., 1st, 2nd, 2nd, 4th)</option>
+                        <option value="fractional">Fractional (e.g., 1, 2.5, 2.5, 4)</option>
+                    </select>
+                </div>
             </div>
         </div>
     </div>
