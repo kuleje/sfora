@@ -516,10 +516,7 @@ class PairwiseComparisonSort(Scene):
         
         # Reset task colors for highlighted tasks
         for highlighted_task_idx in highlight_tasks:
-            self.play(
-                self.tasks[highlighted_task_idx][0].animate.set_fill(WHITE, 1.0).set_stroke(BLACK, 1),
-                self.tasks[highlighted_task_idx][1].animate.set_color(BLACK)
-            )
+            self.play(self.tasks[highlighted_task_idx][0].animate.set_fill(WHITE, 1.0).set_stroke(BLACK, 1))
 
     def insert_task_at_position(self, task_idx, position):
         # Insert task into sorted list
@@ -536,11 +533,8 @@ class PairwiseComparisonSort(Scene):
 
         self.play(*animations, run_time=self.MEDIUM_ANIMATION)
         
-        # Reset task color, stroke, and text color
-        self.play(
-            self.tasks[task_idx][0].animate.set_fill(WHITE, 1.0).set_stroke(BLACK, 1),
-            self.tasks[task_idx][1].animate.set_color(BLACK)
-        )
+        # Reset task color
+        self.play(self.tasks[task_idx][0].animate.set_fill(WHITE, 1.0))
     
     
 
