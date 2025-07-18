@@ -42,11 +42,30 @@
                     <div class="info-section">
                         <h4>🚀 How to get started?</h4>
                         <ol>
-                            <li><strong>Export your tasks:</strong> Get your tasks into a CSV file from tools like ClickUp, including Task ID, Name, and Description columns</li>
+                            <li><strong>Export your tasks:</strong> Get your tasks into a CSV file from tools like ClickUp, including Task ID, Name, and Description columns 
+                                <span class="export-help-trigger" id="export-help-trigger" title="Click to see how to export from ClickUp">🤔 How do I do that?</span>
+                            </li>
                             <li><strong>Upload and configure:</strong> Upload your CSV and map the columns to help the tool understand your data</li>
                             <li><strong>Start comparing:</strong> Click on the more important task in each pair presented to you</li>
                             <li><strong>Export results:</strong> Download your fully prioritized task list with rankings</li>
                         </ol>
+                        
+                        <div class="export-help-section" id="export-help-section" style="display: none;">
+                            <h5>📊 How do I export tasks from ClickUp?</h5>
+                            <div class="export-instructions">
+                                <ol>
+                                    <li>Create a list view in ClickUp</li>
+                                    <li>Apply the filters you want (filter out tasks with very hard start dates, tasks that are already done/abandoned, etc.)</li>
+                                    <li>Go to "Customize" → "Export view"</li>
+                                    <li>Select all columns and CSV format</li>
+                                    <li>Download the CSV file</li>
+                                </ol>
+                                <div class="export-screenshots">
+                                    <img src="assets/clickup.png" alt="ClickUp export step 1" class="export-screenshot">
+                                    <img src="assets/clickup2.png" alt="ClickUp export step 2" class="export-screenshot">
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="info-section">

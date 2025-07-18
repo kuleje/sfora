@@ -54,6 +54,9 @@ document.addEventListener("DOMContentLoaded", function() {
         // Initialize equal priority info panel
         initializeEqualPriorityInfoPanel();
         
+        // Initialize export help trigger
+        initializeExportHelpTrigger();
+        
         // Check if info panel should be opened by default
         checkInfoPanelState();
         
@@ -140,6 +143,38 @@ document.addEventListener("DOMContentLoaded", function() {
             document.addEventListener('click', (e) => {
                 if (!infoPanel.contains(e.target) && !infoIcon.contains(e.target)) {
                     infoPanel.style.display = 'none';
+                }
+            });
+        }
+    }
+    
+    // Initialize export help trigger functionality
+    function initializeExportHelpTrigger() {
+        const exportHelpTrigger = document.getElementById('export-help-trigger');
+        const exportHelpSection = document.getElementById('export-help-section');
+        
+        if (exportHelpTrigger && exportHelpSection) {
+            exportHelpTrigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isVisible = exportHelpSection.style.display !== 'none';
+                exportHelpSection.style.display = isVisible ? 'none' : 'block';
+                
+                // Smooth animation
+                if (!isVisible) {
+                    exportHelpSection.style.opacity = '0';
+                    exportHelpSection.style.transform = 'translateY(-10px)';
+                    
+                    setTimeout(() => {
+                        exportHelpSection.style.opacity = '1';
+                        exportHelpSection.style.transform = 'translateY(0)';
+                    }, 10);
+                }
+            });
+            
+            // Close export help section when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!exportHelpSection.contains(e.target) && !exportHelpTrigger.contains(e.target)) {
+                    exportHelpSection.style.display = 'none';
                 }
             });
         }
