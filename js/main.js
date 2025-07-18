@@ -48,11 +48,55 @@ document.addEventListener("DOMContentLoaded", function() {
             uiRenderer.showDebugControls();
         }
         
+        // Initialize app info panel
+        initializeAppInfoPanel();
+        
         // Load saved state
         loadState();
         
         // Enable auto-save
         storageManager.enableAutoSave();
+    }
+    
+    // Initialize app info panel functionality
+    function initializeAppInfoPanel() {
+        const appInfoIcon = document.getElementById('app-info-icon');
+        const appInfoPanel = document.getElementById('app-info-panel');
+        const appContainer = document.getElementById('app');
+        
+        if (appInfoIcon && appInfoPanel && appContainer) {
+            appInfoIcon.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isVisible = appInfoPanel.style.display !== 'none';
+                appInfoPanel.style.display = isVisible ? 'none' : 'block';
+                
+                // Toggle expanded class on app container
+                if (isVisible) {
+                    appContainer.classList.remove('expanded');
+                } else {
+                    appContainer.classList.add('expanded');
+                }
+                
+                // Smooth animation
+                if (!isVisible) {
+                    appInfoPanel.style.opacity = '0';
+                    appInfoPanel.style.transform = 'translateY(-10px)';
+                    
+                    setTimeout(() => {
+                        appInfoPanel.style.opacity = '1';
+                        appInfoPanel.style.transform = 'translateY(0)';
+                    }, 10);
+                }
+            });
+            
+            // Close info panel when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!appInfoPanel.contains(e.target) && !appInfoIcon.contains(e.target)) {
+                    appInfoPanel.style.display = 'none';
+                    appContainer.classList.remove('expanded');
+                }
+            });
+        }
     }
 
     // Load saved state

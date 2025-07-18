@@ -16,7 +16,54 @@
 </head>
 <body>
     <div id="app">
-        <h1>Pairwise Task Sorter</h1>
+        <div class="app-header">
+            <h1>Pairwise Task Sorter</h1>
+            <span class="app-info-icon" id="app-info-icon" title="Click to learn about this tool">ℹ️</span>
+        </div>
+        
+        <!-- General info panel (hidden by default) -->
+        <div class="app-info-panel" id="app-info-panel" style="display: none;">
+            <div class="info-panel-content">
+                <div class="info-header">
+                    <h3>About Pairwise Task Sorter</h3>
+                </div>
+                
+                <div class="info-body">
+                    <div class="info-section">
+                        <h4>🎯 What is this tool?</h4>
+                        <p>This tool helps you objectively prioritize large lists of tasks by comparing them two at a time. Perfect for planning work across quarters when you need to determine which tasks are truly most critical.</p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h4>✨ Why use it?</h4>
+                        <p>Instead of overwhelming traditional ranking, this tool breaks prioritization into simple pairwise choices. It reduces bias and helps you arrive at clear, objective task rankings - no more guessing which 20 tasks are most critical from your list of 80!</p>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h4>🚀 How to get started?</h4>
+                        <ol>
+                            <li><strong>Export your tasks:</strong> Get your tasks into a CSV file from tools like ClickUp, including Task ID, Name, and Description columns</li>
+                            <li><strong>Upload and configure:</strong> Upload your CSV and map the columns to help the tool understand your data</li>
+                            <li><strong>Start comparing:</strong> Click on the more important task in each pair presented to you</li>
+                            <li><strong>Export results:</strong> Download your fully prioritized task list with rankings</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h4>🧠 The Smart Sorting</h4>
+                        <p>The tool uses <strong>binary insertion sort</strong> - a clever algorithm that doesn't require you to compare every task against every other task. Instead, it uses your comparisons to intelligently place tasks in their correct positions, making the process efficient even with large task lists.</p>
+                    </div>
+                    
+                    <div class="info-animation">
+                        <video width="90%" height="auto" controls>
+                            <source src="assets/PairwiseComparisonSort.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <div id="debug-controls-main" class="debug-controls" style="display: none;">
             <div id="status-log" style="background-color: #eee; border: 1px solid #ccc; padding: 10px; margin-bottom: 1rem; text-align: left;"><strong>Status:</strong> Waiting for user...</div>
         </div>
