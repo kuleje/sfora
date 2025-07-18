@@ -277,13 +277,47 @@ class UITabs {
             const ul = document.createElement('ul');
             ul.className = 'assignee-task-list';
             
-            assigneeGroups.get(assignee).forEach(item => {
+            // Sort tasks within this assignee group by their global rank
+            const sortedTasks = assigneeGroups.get(assignee).sort((a, b) => a.rank - b.rank);
+            
+            sortedTasks.forEach((item, localIndex) => {
+                const localRank = localIndex + 1;
+                
+                // Find the group this task belongs to globally and check if it's tied
+                const globalGroupId = this.state.sortState.sortedGroups.find(groupId => {
+                    const tasks = this.state.rankGroups.get(groupId);
+                    return tasks.includes(item.task.id);
+                });
+                
+                const globalTasks = this.state.rankGroups.get(globalGroupId) || [];
+                const isTied = globalTasks.length > 1;
+                
+                // Calculate global rank display using the same logic as the other tab
+                let globalRankDisplay;
+                const globalRankIndex = this.state.sortState.sortedGroups.indexOf(globalGroupId);
+                let currentRank = 1;
+                for (let i = 0; i < globalRankIndex; i++) {
+                    const prevGroupId = this.state.sortState.sortedGroups[i];
+                    const prevTasks = this.state.rankGroups.get(prevGroupId) || [];
+                    currentRank += prevTasks.length;
+                }
+                globalRankDisplay = this.getRankRange(globalRankIndex, globalTasks.length, currentRank);
+                
                 const li = document.createElement('li');
                 li.innerHTML = `
-                    <span class="rank-badge">${item.rank}</span>
-                    <div class="task-meta">
-                        <span class="task-name-result">${item.task.data[this.state.columnMapping.name] || 'Unnamed task'}</span>
-                        ${item.comment ? `<div class="task-comment-preview">${item.comment}</div>` : ''}
+                    <div class="rank-badge-container">
+                        <span class="rank-badge-local" title="Rank within ${assignee}">
+                            ${localRank}
+                        </span>
+                        <span class="rank-badge-global ${isTied ? 'tied' : ''}" title="Rank within team">
+                            ${globalRankDisplay}
+                        </span>
+                    </div>
+                    <div class="task-content-assignee">
+                        <div class="task-meta-assignee">
+                            <div class="task-name-portion">${item.task.data[this.state.columnMapping.name] || 'Unnamed task'}</div>
+                            <div class="task-comment-preview">${item.comment || ''}</div>
+                        </div>
                     </div>
                 `;
                 ul.appendChild(li);

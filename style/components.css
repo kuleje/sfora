@@ -390,12 +390,57 @@
     padding: 1rem;
     border-bottom: 1px solid #f1f3f4;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 0.5rem;
 }
 
 .assignee-task-list li:last-child {
     border-bottom: none;
+}
+
+/* Assignee tab specific layout */
+.task-content-assignee {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.task-meta-assignee {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.task-name-portion {
+    flex-basis: 66.66%;
+    flex-grow: 0;
+    flex-shrink: 0;
+    font-weight: 500;
+    color: #495057;
+    line-height: 1.4;
+}
+
+.task-meta-assignee .task-comment-preview {
+    flex-basis: 33.33%;
+    flex-grow: 0;
+    flex-shrink: 0;
+    font-size: 0.8em;
+    color: #666;
+    font-style: italic;
+    padding: 0.3rem 0.5rem;
+    background-color: #f8f9fa;
+    border-radius: 3px;
+    border-left: 3px solid #dee2e6;
+    min-height: 1.5em;
+    box-sizing: border-box;
+}
+
+.task-meta-assignee .task-comment-preview:empty {
+    background-color: transparent;
+    border-left: none;
+    padding: 0.3rem 0;
 }
 
 .rank-badge {
@@ -407,6 +452,39 @@
     font-weight: bold;
     min-width: 2rem;
     text-align: center;
+}
+
+.rank-badge-container {
+    display: flex;
+    align-items: center;
+}
+
+.rank-badge-local {
+    background-color: #8a8a8a;
+    color: white;
+    padding: 0.4rem 0.4rem;
+    border-radius: 4px 0 0 4px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    min-width: 1.2rem;
+    text-align: center;
+    cursor: help;
+}
+
+.rank-badge-global {
+    background-color: #6c757d;
+    color: white;
+    padding: 0.4rem 0.4rem;
+    border-radius: 0 4px 4px 0;
+    font-size: 0.9rem;
+    font-weight: bold;
+    min-width: 1.8rem;
+    text-align: center;
+    cursor: help;
+}
+
+.rank-badge-global.tied {
+    background-color: #007bff;
 }
 
 /* Removed tasks styles */
