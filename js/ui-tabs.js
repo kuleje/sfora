@@ -182,7 +182,7 @@ class UITabs {
                         <div class="task-content">
                             <div class="task-name-result">${task.data[this.state.columnMapping.name] || 'Unnamed task'}</div>
                             <div class="task-meta">
-                                ${comment ? `<div class="task-comment-preview">${comment}</div>` : ''}
+                                <div class="task-comment-preview">${comment || ''}</div>
                                 ${assignee ? `<div class="assignee-badge">${assignee}</div>` : ''}
                             </div>
                         </div>
@@ -205,7 +205,7 @@ class UITabs {
                     <div class="task-content">
                         <div class="task-name-result">${task.data[this.state.columnMapping.name] || 'Unnamed task'}</div>
                         <div class="task-meta">
-                            ${comment ? `<div class="task-comment-preview">${comment}</div>` : ''}
+                            <div class="task-comment-preview">${comment || ''}</div>
                             ${assignee ? `<div class="assignee-badge">${assignee}</div>` : ''}
                         </div>
                     </div>
