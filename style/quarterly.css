@@ -260,6 +260,29 @@
     gap: 0.5rem;
 }
 
+.quarter-title-clickable {
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+    user-select: none;
+}
+
+.quarter-title-clickable:hover {
+    opacity: 0.9;
+}
+
+.quarter-chevron {
+    font-size: 0.8em;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-right: 0.25rem;
+    display: inline-block;
+}
+
+.quarter-content {
+    transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    transform-origin: top;
+}
+
 .quarter-title-colored {
     padding: 0.75rem 1rem;
     border-radius: 8px;
@@ -294,6 +317,25 @@
     gap: 0.5rem;
 }
 
+.assignee-header-clickable {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    padding: 0.3rem;
+    border-radius: 4px;
+    user-select: none;
+}
+
+.assignee-header-clickable:hover {
+    background-color: #e9ecef;
+}
+
+.assignee-chevron {
+    font-size: 0.7em;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-right: 0.25rem;
+    display: inline-block;
+}
+
 .assignee-count {
     background-color: #6c757d;
     color: white;
@@ -307,6 +349,9 @@
     display: flex;
     flex-direction: column;
     gap: 0.3rem;
+    transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    transform-origin: top;
 }
 
 .task-item-quarterly {

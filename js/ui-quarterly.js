@@ -5,6 +5,92 @@ class UIQuarterly {
         this.csvHandler = csvHandler;
         this.log = logger;
         this.quarterlyStatus = new QuarterlyStatus();
+        this.collapsedStateKey = 'taskSorter_collapsedQuarters';
+        this.collapsedAssigneeStateKey = 'taskSorter_collapsedAssignees';
+    }
+
+    // Save collapsed state to localStorage
+    saveCollapsedState(collapsedQuarters) {
+        try {
+            localStorage.setItem(this.collapsedStateKey, JSON.stringify(collapsedQuarters));
+        } catch (error) {
+            this.log(`Error saving collapsed state: ${error.message}`);
+        }
+    }
+
+    // Load collapsed state from localStorage
+    loadCollapsedState() {
+        try {
+            const saved = localStorage.getItem(this.collapsedStateKey);
+            return saved ? JSON.parse(saved) : []; // Default to empty array (all expanded)
+        } catch (error) {
+            this.log(`Error loading collapsed state: ${error.message}`);
+            return [];
+        }
+    }
+
+    // Toggle collapsed state of a quarter
+    toggleQuarterCollapsed(quarterName) {
+        const collapsedQuarters = this.loadCollapsedState();
+        const index = collapsedQuarters.indexOf(quarterName);
+        
+        if (index === -1) {
+            collapsedQuarters.push(quarterName);
+        } else {
+            collapsedQuarters.splice(index, 1);
+        }
+        
+        this.saveCollapsedState(collapsedQuarters);
+        return !collapsedQuarters.includes(quarterName);
+    }
+
+    // Check if a quarter is collapsed
+    isQuarterCollapsed(quarterName) {
+        const collapsedQuarters = this.loadCollapsedState();
+        return collapsedQuarters.includes(quarterName);
+    }
+
+    // Save collapsed assignee state to localStorage
+    saveCollapsedAssigneeState(collapsedAssignees) {
+        try {
+            localStorage.setItem(this.collapsedAssigneeStateKey, JSON.stringify(collapsedAssignees));
+        } catch (error) {
+            this.log(`Error saving collapsed assignee state: ${error.message}`);
+        }
+    }
+
+    // Load collapsed assignee state from localStorage
+    loadCollapsedAssigneeState() {
+        try {
+            const saved = localStorage.getItem(this.collapsedAssigneeStateKey);
+            return saved ? JSON.parse(saved) : []; // Default to empty array (all expanded)
+        } catch (error) {
+            this.log(`Error loading collapsed assignee state: ${error.message}`);
+            return [];
+        }
+    }
+
+    // Toggle collapsed state of an assignee group
+    toggleAssigneeCollapsed(quarterName, assigneeName) {
+        const collapsedAssignees = this.loadCollapsedAssigneeState();
+        const key = `${quarterName}:${assigneeName}`;
+        const index = collapsedAssignees.indexOf(key);
+        
+        if (index === -1) {
+            collapsedAssignees.push(key);
+        } else {
+            collapsedAssignees.splice(index, 1);
+        }
+        
+        this.saveCollapsedAssigneeState(collapsedAssignees);
+        return !collapsedAssignees.includes(key);
+    }
+
+    // Check if an assignee group is collapsed
+    isAssigneeCollapsed(quarterName, assigneeName) {
+        const collapsedAssignees = this.loadCollapsedAssigneeState();
+        const key = `${quarterName}:${assigneeName}`;
+        return collapsedAssignees.includes(key);
     }
 
     // Render quarterly status interface in tab
@@ -223,14 +309,26 @@ class UIQuarterly {
             const quarterHeader = document.createElement('div');
             quarterHeader.className = 'quarter-header';
             const textColor = this.quarterlyStatus.getTextColor(quarterData.color);
+            const isCollapsed = this.isQuarterCollapsed(quarterName);
+            const chevronIcon = isCollapsed ? '▶' : '▼';
+            
             quarterHeader.innerHTML = `
-                <h3 class="quarter-title quarter-title-colored" style="background-color: ${quarterData.color}; color: ${textColor}">
+                <h3 class="quarter-title quarter-title-colored quarter-title-clickable" style="background-color: ${quarterData.color}; color: ${textColor}" data-quarter="${quarterName}">
+                    <span class="quarter-chevron" style="transform: rotate(${isCollapsed ? '-90deg' : '0deg'})">${chevronIcon}</span>
                     ${quarterName.toUpperCase()}
                     <span class="quarter-count">(${quarterData.tasks.length} tasks)</span>
                 </h3>
             `;
             
             quarterDiv.appendChild(quarterHeader);
+            
+            // Create content container for tasks
+            const quarterContent = document.createElement('div');
+            quarterContent.className = 'quarter-content';
+            if (isCollapsed) {
+                quarterContent.style.height = '0px';
+                quarterContent.style.opacity = '0';
+            }
             
             // Group tasks by assignee within this quarter
             const tasksByAssignee = new Map();
@@ -254,9 +352,15 @@ class UIQuarterly {
                 const assigneeDiv = document.createElement('div');
                 assigneeDiv.className = 'assignee-group-quarterly';
                 
+                const isAssigneeCollapsed = this.isAssigneeCollapsed(quarterName, assignee);
+                const chevronIcon = isAssigneeCollapsed ? '▶' : '▼';
+                
                 const assigneeHeader = document.createElement('div');
-                assigneeHeader.className = 'assignee-header-quarterly';
+                assigneeHeader.className = 'assignee-header-quarterly assignee-header-clickable';
+                assigneeHeader.setAttribute('data-quarter', quarterName);
+                assigneeHeader.setAttribute('data-assignee', assignee);
                 assigneeHeader.innerHTML = `
+                    <span class="assignee-chevron" style="transform: rotate(${isAssigneeCollapsed ? '-90deg' : '0deg'})">${chevronIcon}</span>
                     ${assignee === 'Unassigned' ? '❓' : '👤'} ${assignee}
                     <span class="assignee-count">(${tasksByAssignee.get(assignee).length} tasks)</span>
                 `;
@@ -265,6 +369,10 @@ class UIQuarterly {
                 
                 const tasksList = document.createElement('div');
                 tasksList.className = 'tasks-list-quarterly';
+                if (isAssigneeCollapsed) {
+                    tasksList.style.height = '0px';
+                    tasksList.style.opacity = '0';
+                }
                 
                 tasksByAssignee.get(assignee).forEach(task => {
                     const taskDiv = document.createElement('div');
@@ -337,13 +445,111 @@ class UIQuarterly {
                 });
                 
                 assigneeDiv.appendChild(tasksList);
-                quarterDiv.appendChild(assigneeDiv);
+                quarterContent.appendChild(assigneeDiv);
             });
             
+            quarterDiv.appendChild(quarterContent);
             distributionDiv.appendChild(quarterDiv);
         });
         
         container.appendChild(distributionDiv);
+        
+        // Add click event listeners for collapsible quarters and assignees
+        distributionDiv.addEventListener('click', (e) => {
+            // Handle quarter collapsing
+            if (e.target.classList.contains('quarter-title-clickable') || e.target.closest('.quarter-title-clickable')) {
+                const quarterTitle = e.target.closest('.quarter-title-clickable') || e.target;
+                const quarterName = quarterTitle.getAttribute('data-quarter');
+                const quarterContent = quarterTitle.closest('.quarter-section').querySelector('.quarter-content');
+                const chevron = quarterTitle.querySelector('.quarter-chevron');
+                
+                // Toggle collapsed state
+                const isExpanded = this.toggleQuarterCollapsed(quarterName);
+                
+                // Animate the collapse/expand
+                if (isExpanded) {
+                    // Expanding
+                    quarterContent.style.height = 'auto';
+                    const targetHeight = quarterContent.scrollHeight;
+                    quarterContent.style.height = '0px';
+                    quarterContent.style.opacity = '0';
+                    
+                    // Force reflow
+                    quarterContent.offsetHeight;
+                    
+                    // Animate to target height
+                    quarterContent.style.height = targetHeight + 'px';
+                    quarterContent.style.opacity = '1';
+                    chevron.textContent = '▼';
+                    chevron.style.transform = 'rotate(0deg)';
+                    
+                    // Clean up after animation
+                    setTimeout(() => {
+                        quarterContent.style.height = 'auto';
+                    }, 300);
+                } else {
+                    // Collapsing
+                    const currentHeight = quarterContent.scrollHeight;
+                    quarterContent.style.height = currentHeight + 'px';
+                    
+                    // Force reflow
+                    quarterContent.offsetHeight;
+                    
+                    // Animate to collapsed
+                    quarterContent.style.height = '0px';
+                    quarterContent.style.opacity = '0';
+                    chevron.textContent = '▶';
+                    chevron.style.transform = 'rotate(-90deg)';
+                }
+            }
+            // Handle assignee group collapsing
+            else if (e.target.classList.contains('assignee-header-clickable') || e.target.closest('.assignee-header-clickable')) {
+                const assigneeHeader = e.target.closest('.assignee-header-clickable') || e.target;
+                const quarterName = assigneeHeader.getAttribute('data-quarter');
+                const assigneeName = assigneeHeader.getAttribute('data-assignee');
+                const tasksList = assigneeHeader.nextElementSibling;
+                const chevron = assigneeHeader.querySelector('.assignee-chevron');
+                
+                // Toggle collapsed state
+                const isExpanded = this.toggleAssigneeCollapsed(quarterName, assigneeName);
+                
+                // Animate the collapse/expand
+                if (isExpanded) {
+                    // Expanding
+                    tasksList.style.height = 'auto';
+                    const targetHeight = tasksList.scrollHeight;
+                    tasksList.style.height = '0px';
+                    tasksList.style.opacity = '0';
+                    
+                    // Force reflow
+                    tasksList.offsetHeight;
+                    
+                    // Animate to target height
+                    tasksList.style.height = targetHeight + 'px';
+                    tasksList.style.opacity = '1';
+                    chevron.textContent = '▼';
+                    chevron.style.transform = 'rotate(0deg)';
+                    
+                    // Clean up after animation
+                    setTimeout(() => {
+                        tasksList.style.height = 'auto';
+                    }, 300);
+                } else {
+                    // Collapsing
+                    const currentHeight = tasksList.scrollHeight;
+                    tasksList.style.height = currentHeight + 'px';
+                    
+                    // Force reflow
+                    tasksList.offsetHeight;
+                    
+                    // Animate to collapsed
+                    tasksList.style.height = '0px';
+                    tasksList.style.opacity = '0';
+                    chevron.textContent = '▶';
+                    chevron.style.transform = 'rotate(-90deg)';
+                }
+            }
+        });
         
         // Add export button
         const exportDiv = document.createElement('div');
