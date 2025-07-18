@@ -242,6 +242,17 @@ button:active {
 #equal-rank-area {
     margin: 1.5rem 0;
     text-align: center;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#equal-rank-area .info-icon {
+    position: absolute;
+    left: calc(50% + 120px);
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 #equal-rank-button {

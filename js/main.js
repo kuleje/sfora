@@ -51,6 +51,9 @@ document.addEventListener("DOMContentLoaded", function() {
         // Initialize app info panel
         initializeAppInfoPanel();
         
+        // Initialize equal priority info panel
+        initializeEqualPriorityInfoPanel();
+        
         // Check if info panel should be opened by default
         checkInfoPanelState();
         
@@ -76,8 +79,12 @@ document.addEventListener("DOMContentLoaded", function() {
                 // Toggle expanded class on app container
                 if (isVisible) {
                     appContainer.classList.remove('expanded');
+                    // Save closed state to localStorage
+                    localStorage.setItem('appInfoPanelOpen', 'false');
                 } else {
                     appContainer.classList.add('expanded');
+                    // Save open state to localStorage
+                    localStorage.setItem('appInfoPanelOpen', 'true');
                     // Initialize debug mode toggle when panel opens
                     initializeDebugModeToggle();
                 }
@@ -99,6 +106,40 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (!appInfoPanel.contains(e.target) && !appInfoIcon.contains(e.target)) {
                     appInfoPanel.style.display = 'none';
                     appContainer.classList.remove('expanded');
+                    // Save closed state to localStorage
+                    localStorage.setItem('appInfoPanelOpen', 'false');
+                }
+            });
+        }
+    }
+    
+    // Initialize equal priority info panel functionality
+    function initializeEqualPriorityInfoPanel() {
+        const infoIcon = document.getElementById('equal-priority-info-icon');
+        const infoPanel = document.getElementById('equal-priority-info-panel');
+        
+        if (infoIcon && infoPanel) {
+            infoIcon.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isVisible = infoPanel.style.display !== 'none';
+                infoPanel.style.display = isVisible ? 'none' : 'block';
+                
+                // Smooth animation
+                if (!isVisible) {
+                    infoPanel.style.opacity = '0';
+                    infoPanel.style.transform = 'translateY(-10px)';
+                    
+                    setTimeout(() => {
+                        infoPanel.style.opacity = '1';
+                        infoPanel.style.transform = 'translateY(0)';
+                    }, 10);
+                }
+            });
+            
+            // Close info panel when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!infoPanel.contains(e.target) && !infoIcon.contains(e.target)) {
+                    infoPanel.style.display = 'none';
                 }
             });
         }
@@ -113,18 +154,23 @@ document.addEventListener("DOMContentLoaded", function() {
             
             if (isDebugMode) {
                 debugToggle.textContent = 'Switch to normal mode';
-                debugToggle.href = window.location.pathname + '?info=open';
+                debugToggle.href = window.location.pathname;
             } else {
                 debugToggle.textContent = 'Open with debug mode';
-                debugToggle.href = window.location.pathname + '?debug=true&info=open';
+                debugToggle.href = window.location.pathname + '?debug=true';
             }
         }
     }
     
     // Check if info panel should be opened by default
     function checkInfoPanelState() {
+        // Check URL parameter first (for backward compatibility)
         const urlParams = new URLSearchParams(window.location.search);
-        const shouldOpenInfo = urlParams.get('info') === 'open';
+        const urlShouldOpenInfo = urlParams.get('info') === 'open';
+        
+        // Check localStorage state
+        const savedState = localStorage.getItem('appInfoPanelOpen');
+        const shouldOpenInfo = urlShouldOpenInfo || savedState === 'true';
         
         if (shouldOpenInfo) {
             const appInfoPanel = document.getElementById('app-info-panel');
@@ -150,6 +196,9 @@ document.addEventListener("DOMContentLoaded", function() {
                 
                 // Initialize debug mode toggle
                 initializeDebugModeToggle();
+                
+                // Save state to localStorage (in case it was opened via URL)
+                localStorage.setItem('appInfoPanelOpen', 'true');
             }
         }
     }
