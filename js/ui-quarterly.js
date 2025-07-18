@@ -136,11 +136,53 @@ class UIQuarterly {
         const statusManagementSection = document.createElement('div');
         statusManagementSection.className = 'status-management';
         
-        // Status title
+        // Status title with info icon
         const statusTitle = document.createElement('h3');
         statusTitle.className = 'status-title';
-        statusTitle.textContent = 'Quarterly Statuses';
+        statusTitle.innerHTML = `
+            Quarterly Statuses 
+            <span class="info-icon" id="quarterly-info-icon" title="Click for information about how quarters work">ℹ️</span>
+        `;
         statusManagementSection.appendChild(statusTitle);
+        
+        // Info panel (hidden by default)
+        const infoPanel = document.createElement('div');
+        infoPanel.className = 'quarterly-info-panel';
+        infoPanel.id = 'quarterly-info-panel';
+        infoPanel.style.display = 'none';
+        infoPanel.innerHTML = `
+            <div class="info-panel-content">
+                <h4>How Quarterly Distribution Works</h4>
+                <div class="info-section">
+                    <h5>📅 Quarter Generation</h5>
+                    <p>Quarters start from the current quarter (auto-detected from today's date) and generate a sequence of upcoming quarters. The system always includes a "far future" bucket for overflow tasks.</p>
+                </div>
+                <div class="info-section">
+                    <h5>🎯 Task Distribution Rules</h5>
+                    <ul>
+                        <li><strong>Assignee Grouping:</strong> Tasks are first grouped by assignee to ensure balanced distribution</li>
+                        <li><strong>Priority Order:</strong> Within each assignee group, tasks are distributed in their priority ranking order</li>
+                        <li><strong>Tie-Breaking:</strong> If tied tasks would span a quarter boundary, the entire tied group moves to the later quarter</li>
+                        <li><strong>Custom Counts:</strong> Each quarter can have different task counts (default: 5 tasks per quarter)</li>
+                        <li><strong>Overflow:</strong> Tasks that don't fit in regular quarters go to "far future"</li>
+                    </ul>
+                </div>
+                <div class="info-section">
+                    <h5>⚙️ Quarter Management</h5>
+                    <ul>
+                        <li><strong>Adding Quarters:</strong> Click "Add Next Quarter" to first recreate any deleted quarters (except the current one), then add future quarters in chronological order</li>
+                        <li><strong>Deleting Quarters:</strong> Any quarter can be deleted, but the current quarter won't be automatically recreated when adding new ones (in case your plans start from the upcoming quarter)</li>
+                        <li><strong>Task Counts:</strong> Adjust the number of tasks per quarter (default: 5 tasks)</li>
+                        <li><strong>Grouping Views:</strong> Switch between "Quarter → Assignee" and "Assignee → Quarter" perspectives</li>
+                    </ul>
+                </div>
+                <div class="info-section">
+                    <h5>💾 Session Data</h5>
+                    <p>Quarter configurations are not persisted between browser sessions. To restart with default settings, simply refresh the browser tab.</p>
+                </div>
+            </div>
+        `;
+        statusManagementSection.appendChild(infoPanel);
         
         // Existing statuses section
         const existingStatusesSection = document.createElement('div');
@@ -287,6 +329,35 @@ class UIQuarterly {
                     
                     // Re-render the results if they exist
                     this.applyQuarterlyStatus();
+                }
+            });
+        }
+        
+        // Add event listener for info icon
+        const infoIcon = document.getElementById('quarterly-info-icon');
+        const infoPanel = document.getElementById('quarterly-info-panel');
+        if (infoIcon && infoPanel) {
+            infoIcon.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isVisible = infoPanel.style.display !== 'none';
+                infoPanel.style.display = isVisible ? 'none' : 'block';
+                
+                // Smooth animation
+                if (!isVisible) {
+                    infoPanel.style.opacity = '0';
+                    infoPanel.style.transform = 'translateY(-10px)';
+                    
+                    setTimeout(() => {
+                        infoPanel.style.opacity = '1';
+                        infoPanel.style.transform = 'translateY(0)';
+                    }, 10);
+                }
+            });
+            
+            // Close info panel when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!infoPanel.contains(e.target) && !infoIcon.contains(e.target)) {
+                    infoPanel.style.display = 'none';
                 }
             });
         }

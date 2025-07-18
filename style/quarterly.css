@@ -20,6 +20,77 @@
     margin-bottom: 1rem;
     padding-bottom: 0.5rem;
     border-bottom: 2px solid #e9ecef;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.info-icon {
+    font-size: 0.9em;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    user-select: none;
+}
+
+.info-icon:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.quarterly-info-panel {
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: #f1f3f4;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.9em;
+    line-height: 1.5;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    text-align: left;
+}
+
+.info-panel-content h4 {
+    color: #374151;
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1.1em;
+}
+
+.info-section {
+    margin-bottom: 1rem;
+}
+
+.info-section:last-child {
+    margin-bottom: 0;
+}
+
+.info-section h5 {
+    color: #4b5563;
+    margin-bottom: 0.5rem;
+    font-size: 0.95em;
+    font-weight: 600;
+}
+
+.info-section p {
+    color: #6b7280;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.info-section ul {
+    color: #6b7280;
+    margin: 0;
+    padding-left: 1.2rem;
+}
+
+.info-section li {
+    margin-bottom: 0.25rem;
+    line-height: 1.4;
+}
+
+.info-section li:last-child {
+    margin-bottom: 0;
 }
 
 .existing-statuses {
