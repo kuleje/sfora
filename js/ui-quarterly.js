@@ -34,9 +34,10 @@ class UIQuarterly {
             '#D4A373'  // Muted Ochre
         ];
         
-        // Sequential assignee color mapping
+        // Sequential assignee color mapping with random starting point
         this.assigneeColorMap = new Map();
         this.assigneeOrder = [];
+        this.colorStartOffset = Math.floor(Math.random() * this.assigneeColorPalette.length);
     }
 
     // Save collapsed state to localStorage
@@ -142,7 +143,7 @@ class UIQuarterly {
         }
     }
 
-    // Get color for assignee based on sequential assignment
+    // Get color for assignee based on sequential assignment with random starting point
     getAssigneeColor(assigneeName) {
         if (assigneeName === 'Unassigned') {
             return '#95a5a6'; // Gray for unassigned
@@ -151,7 +152,7 @@ class UIQuarterly {
         // If we haven't seen this assignee before, assign the next color sequentially
         if (!this.assigneeColorMap.has(assigneeName)) {
             this.assigneeOrder.push(assigneeName);
-            const colorIndex = (this.assigneeOrder.length - 1) % this.assigneeColorPalette.length;
+            const colorIndex = (this.colorStartOffset + this.assigneeOrder.length - 1) % this.assigneeColorPalette.length;
             this.assigneeColorMap.set(assigneeName, this.assigneeColorPalette[colorIndex]);
         }
         
