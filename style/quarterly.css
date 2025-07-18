@@ -54,6 +54,13 @@
     font-size: 1em;
 }
 
+.status-name-colored {
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
 .status-color-indicator {
     width: 20px;
     height: 20px;
@@ -253,13 +260,19 @@
     gap: 0.5rem;
 }
 
+.quarter-title-colored {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin: -0.5rem -0.5rem 0.5rem -0.5rem;
+}
+
 .quarter-count {
-    background-color: rgba(0, 0, 0, 0.1);
-    color: #495057;
+    background-color: rgba(255, 255, 255, 0.2);
     padding: 0.2rem 0.5rem;
     border-radius: 12px;
     font-size: 0.8em;
     font-weight: 500;
+    opacity: 0.9;
 }
 
 .assignee-group-quarterly {
@@ -312,15 +325,20 @@
 }
 
 .task-rank {
-    background-color: #28a745;
+    background: #6c757d;
     color: white;
-    padding: 0.2rem 0.4rem;
-    border-radius: 10px;
-    font-size: 0.7em;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
     font-weight: bold;
-    min-width: 1.5rem;
+    margin-right: 0.8rem;
+    min-width: 2rem;
     text-align: center;
     flex-shrink: 0;
+}
+
+.task-rank.tied {
+    background-color: #007bff;
 }
 
 .task-name {
@@ -333,7 +351,6 @@
 }
 
 .task-status {
-    color: white;
     padding: 0.2rem 0.4rem;
     border-radius: 10px;
     font-size: 0.7em;

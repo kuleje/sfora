@@ -7,13 +7,19 @@ class QuarterlyStatus {
         this.defaultQuarters = 4;
         this.defaultTasksPerQuarter = 5;
         
-        // Define quarter colors
+        // Define quarter colors using Notion color scheme
         this.quarterColors = {
-            'q1': '#3498db', // Blue
-            'q2': '#2ecc71', // Green
-            'q3': '#f39c12', // Orange
-            'q4': '#e74c3c', // Red
-            'far future': '#95a5a6' // Gray
+            'q1': '#a4c2f4', // Quarter 1 - Light blue
+            'q2': '#1bbc9c', // Quarter 2 - Teal
+            'q3': '#f9d900', // Quarter 3 - Yellow
+            'q4': '#e8912d', // Quarter 4 - Orange
+            'far future': '#d3d3d3', // Far Future - Light gray
+            'task proposal': '#f06ab0', // Task proposal - Pink
+            'recurring tasks': '#6813e0', // Recurring tasks - Purple
+            'in progress': '#22fdeb', // In progress - Cyan
+            'abandoned': '#667684', // Abandoned/discarded - Dark gray
+            'done': '#e25d5d', // Done (To Inspection) - Red
+            'closed': '#71bb66' // Closed in quarter - Green
         };
         
         // Track deleted quarters to allow recreation
@@ -244,10 +250,12 @@ class QuarterlyStatus {
     }
     
     getQuarterColor(quarterName) {
-        if (quarterName === 'far future') {
-            return this.quarterColors['far future'];
+        // Handle special status names
+        if (this.quarterColors[quarterName]) {
+            return this.quarterColors[quarterName];
         }
         
+        // Handle quarter names like "q1 - 2024"
         const match = quarterName.match(/q(\d+)/);
         if (match) {
             const quarter = match[1];
@@ -255,6 +263,25 @@ class QuarterlyStatus {
         }
         
         return '#333333'; // default color
+    }
+    
+    // Get appropriate text color based on background color
+    getTextColor(backgroundColor) {
+        // Light backgrounds that need dark text
+        const lightColors = [
+            '#a4c2f4', // Q1 - Light blue
+            '#f9d900', // Q3 - Yellow
+            '#d3d3d3', // Far Future - Light gray
+            '#f06ab0', // Task proposal - Pink
+            '#22fdeb'  // In progress - Cyan
+        ];
+        
+        // Check if this is a light color that needs dark text
+        if (lightColors.includes(backgroundColor.toLowerCase())) {
+            return '#000000'; // Black text
+        }
+        
+        return '#ffffff'; // White text for dark backgrounds
     }
     
     addQuarter(currentQuarters) {

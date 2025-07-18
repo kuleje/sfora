@@ -37,9 +37,10 @@ class UIQuarterly {
             statusDiv.className = 'status-item';
             statusDiv.setAttribute('data-status-name', status.name);
             
+            const textColor = this.quarterlyStatus.getTextColor(status.color);
             statusDiv.innerHTML = `
                 <div class="status-info">
-                    <span class="status-name" style="color: ${status.color}">${status.name}</span>
+                    <span class="status-name status-name-colored" style="background-color: ${status.color}; color: ${textColor}">${status.name}</span>
                     <span class="status-color-indicator" style="background-color: ${status.color}"></span>
                 </div>
                 <div class="status-controls">
@@ -221,9 +222,10 @@ class UIQuarterly {
             
             const quarterHeader = document.createElement('div');
             quarterHeader.className = 'quarter-header';
+            const textColor = this.quarterlyStatus.getTextColor(quarterData.color);
             quarterHeader.innerHTML = `
-                <h3 class="quarter-title" style="color: ${quarterData.color}">
-                    ${quarterName}
+                <h3 class="quarter-title quarter-title-colored" style="background-color: ${quarterData.color}; color: ${textColor}">
+                    ${quarterName.toUpperCase()}
                     <span class="quarter-count">(${quarterData.tasks.length} tasks)</span>
                 </h3>
             `;
@@ -267,10 +269,69 @@ class UIQuarterly {
                 tasksByAssignee.get(assignee).forEach(task => {
                     const taskDiv = document.createElement('div');
                     taskDiv.className = 'task-item-quarterly';
+                    
+                    // Find the global group this task belongs to and check if it's tied
+                    const globalGroupId = this.state.sortState.sortedGroups.find(groupId => {
+                        const tasks = this.state.rankGroups.get(groupId);
+                        return tasks.includes(task.id);
+                    });
+                    
+                    const globalTasks = this.state.rankGroups.get(globalGroupId) || [];
+                    const isTied = globalTasks.length > 1;
+                    const tiedClass = isTied ? ' tied' : '';
+                    
+                    // Calculate rank display using the same logic as other tabs
+                    const globalRankIndex = this.state.sortState.sortedGroups.indexOf(globalGroupId);
+                    let currentRank = 1;
+                    for (let i = 0; i < globalRankIndex; i++) {
+                        const prevGroupId = this.state.sortState.sortedGroups[i];
+                        const prevTasks = this.state.rankGroups.get(prevGroupId) || [];
+                        currentRank += prevTasks.length;
+                    }
+                    
+                    // Get the ranking style from the UI renderer
+                    const rankingStyle = window.uiRenderer ? window.uiRenderer.rankingStyle : 'range';
+                    let rankDisplay;
+                    
+                    switch (rankingStyle) {
+                        case 'range':
+                            if (globalTasks.length === 1) {
+                                rankDisplay = currentRank.toString();
+                            } else {
+                                const endRank = currentRank + globalTasks.length - 1;
+                                rankDisplay = `${currentRank}-${endRank}`;
+                            }
+                            break;
+                        case 'standard':
+                            rankDisplay = currentRank.toString();
+                            break;
+                        case 'modified':
+                            rankDisplay = currentRank.toString();
+                            break;
+                        case 'ordinal':
+                            const getOrdinal = (n) => {
+                                const s = ["th", "st", "nd", "rd"];
+                                const v = n % 100;
+                                return n + (s[(v - 20) % 10] || s[v] || s[0]);
+                            };
+                            rankDisplay = getOrdinal(currentRank);
+                            break;
+                        case 'fractional':
+                            if (globalTasks.length === 1) {
+                                rankDisplay = currentRank.toString();
+                            } else {
+                                const endRank = currentRank + globalTasks.length - 1;
+                                const fractionalRank = (currentRank + endRank) / 2;
+                                rankDisplay = fractionalRank.toString();
+                            }
+                            break;
+                        default:
+                            rankDisplay = currentRank.toString();
+                    }
+                    
                     taskDiv.innerHTML = `
-                        <span class="task-rank">#${task.rank}</span>
+                        <span class="task-rank${tiedClass}">${rankDisplay}</span>
                         <span class="task-name">${task.name}</span>
-                        <span class="task-status" style="background-color: ${quarterData.color}">${quarterName}</span>
                     `;
                     tasksList.appendChild(taskDiv);
                 });
