@@ -231,3 +231,59 @@ ol#sorted-list li {
 #results-area {
     margin-top: 2rem;
 }
+
+/* Back to Sorting Button */
+.back-to-sorting-section {
+    text-align: center;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.back-to-sorting-btn {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-size: 1em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-bottom: 0.5rem;
+}
+
+.back-to-sorting-btn:hover {
+    background-color: #0056b3;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+}
+
+.back-to-sorting-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+}
+
+.back-to-sorting-btn.disabled,
+.back-to-sorting-btn:disabled {
+    background-color: #6c757d;
+    color: #fff;
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+
+.back-to-sorting-btn.disabled:hover,
+.back-to-sorting-btn:disabled:hover {
+    background-color: #6c757d;
+    transform: none;
+    box-shadow: none;
+}
+
+.back-to-sorting-hint {
+    color: #6c757d;
+    font-size: 0.9em;
+    margin: 0;
+    line-height: 1.4;
+}

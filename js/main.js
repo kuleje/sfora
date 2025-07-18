@@ -381,6 +381,16 @@ document.addEventListener("DOMContentLoaded", function() {
         uiRenderer.displayResults(groupByAssigneeCheckbox.checked);
     }
 
+    function handleBackToSorting() {
+        // Hide results area and show sorting area
+        resultsArea.style.display = 'none';
+        sortingArea.style.display = 'block';
+        
+        // Continue sorting from where we left off
+        log('Returning to sorting...');
+        continueSort();
+    }
+
     // Export to CSV
     function exportToCSV() {
         const csv = csvHandler.exportToCSV();
@@ -462,6 +472,10 @@ document.addEventListener("DOMContentLoaded", function() {
 
     document.addEventListener('taskRestored', (e) => {
         handleTaskRestoration(e.detail.taskId);
+    });
+    
+    document.addEventListener('backToSorting', (e) => {
+        handleBackToSorting();
     });
 
     // Global function for group details toggle (needed for HTML onclick)

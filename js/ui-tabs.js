@@ -382,6 +382,24 @@ class UITabs {
             return;
         }
 
+        // Add back to sorting button
+        const backToSortingDiv = document.createElement('div');
+        backToSortingDiv.className = 'back-to-sorting-section';
+        
+        // Check if sorting is complete (no more tasks to sort)
+        const sortingComplete = this.state.sortState.done;
+        const buttonClass = sortingComplete ? 'back-to-sorting-btn disabled' : 'back-to-sorting-btn';
+        const buttonText = sortingComplete ? '✓ Sorting Complete' : '← Back to Sorting';
+        const hintText = sortingComplete ? 'All tasks have been sorted' : 'Continue sorting tasks or restore removed tasks below';
+        
+        backToSortingDiv.innerHTML = `
+            <button class="${buttonClass}" id="back-to-sorting-btn" ${sortingComplete ? 'disabled' : ''}>
+                ${buttonText}
+            </button>
+            <p class="back-to-sorting-hint">${hintText}</p>
+        `;
+        container.appendChild(backToSortingDiv);
+
         // Group removed tasks by assignee
         const removedAssigneeGroups = new Map();
         
@@ -436,11 +454,15 @@ class UITabs {
             container.appendChild(groupDiv);
         });
         
-        // Add restore functionality
+        // Add restore functionality and back to sorting button
         container.addEventListener('click', (e) => {
             if (e.target.classList.contains('restore-task-btn')) {
                 const taskId = parseInt(e.target.getAttribute('data-task-id'));
                 const event = new CustomEvent('taskRestored', { detail: { taskId } });
+                document.dispatchEvent(event);
+            } else if (e.target.classList.contains('back-to-sorting-btn') && !e.target.disabled) {
+                // Dispatch event to continue sorting from where we left off
+                const event = new CustomEvent('backToSorting');
                 document.dispatchEvent(event);
             }
         });
