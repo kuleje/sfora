@@ -51,6 +51,9 @@ document.addEventListener("DOMContentLoaded", function() {
         // Initialize app info panel
         initializeAppInfoPanel();
         
+        // Check if info panel should be opened by default
+        checkInfoPanelState();
+        
         // Load saved state
         loadState();
         
@@ -75,6 +78,8 @@ document.addEventListener("DOMContentLoaded", function() {
                     appContainer.classList.remove('expanded');
                 } else {
                     appContainer.classList.add('expanded');
+                    // Initialize debug mode toggle when panel opens
+                    initializeDebugModeToggle();
                 }
                 
                 // Smooth animation
@@ -96,6 +101,56 @@ document.addEventListener("DOMContentLoaded", function() {
                     appContainer.classList.remove('expanded');
                 }
             });
+        }
+    }
+    
+    // Initialize debug mode toggle functionality
+    function initializeDebugModeToggle() {
+        const debugToggle = document.getElementById('debug-mode-toggle');
+        if (debugToggle) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const isDebugMode = urlParams.get('debug') === 'true';
+            
+            if (isDebugMode) {
+                debugToggle.textContent = 'Switch to normal mode';
+                debugToggle.href = window.location.pathname + '?info=open';
+            } else {
+                debugToggle.textContent = 'Open with debug mode';
+                debugToggle.href = window.location.pathname + '?debug=true&info=open';
+            }
+        }
+    }
+    
+    // Check if info panel should be opened by default
+    function checkInfoPanelState() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const shouldOpenInfo = urlParams.get('info') === 'open';
+        
+        if (shouldOpenInfo) {
+            const appInfoPanel = document.getElementById('app-info-panel');
+            const appContainer = document.getElementById('app');
+            
+            if (appInfoPanel && appContainer) {
+                // Disable transitions temporarily
+                appInfoPanel.style.transition = 'none';
+                appContainer.style.transition = 'none';
+                
+                appInfoPanel.style.display = 'block';
+                appContainer.classList.add('expanded');
+                
+                // Set final state immediately
+                appInfoPanel.style.opacity = '1';
+                appInfoPanel.style.transform = 'translateY(0)';
+                
+                // Re-enable transitions after a frame
+                setTimeout(() => {
+                    appInfoPanel.style.transition = '';
+                    appContainer.style.transition = '';
+                }, 0);
+                
+                // Initialize debug mode toggle
+                initializeDebugModeToggle();
+            }
         }
     }
 

@@ -141,7 +141,7 @@ class UIQuarterly {
         statusTitle.className = 'status-title';
         statusTitle.innerHTML = `
             Quarterly Statuses 
-            <span class="info-icon" id="quarterly-info-icon" title="Click for information about how quarters work">ℹ️</span>
+            <span class="info-icon" id="quarterly-info-icon" title="Click for information about how quarters work">🤔 How do they work?</span>
         `;
         statusManagementSection.appendChild(statusTitle);
         
