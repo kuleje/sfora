@@ -26,3 +26,32 @@ wheels/
 .installed.cfg
 *.egg
 MANIFEST
+
+# Data files - should not be committed
+*.csv
+*.xlsx
+*.xls
+
+# Screenshots and temporary images
+Screenshot_*.png
+*screenshot*.png
+*_preview*.png
+layout_*.png
+old_look_*.png
+range_look_*.png
+ssss.csv
+
+# Node.js
+node_modules/
+package-lock.json
+
+# Testing files
+test-*.js
+tests/
+*test*.js
+TESTING.md
+
+# Temporary files
+*.tmp
+*.temp
+*.log
