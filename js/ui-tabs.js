@@ -372,22 +372,16 @@ class UITabs {
 
     // Helper method to render removed tasks in tab
     renderRemovedTasksInTab(container) {
-        if (this.state.removedTasks.size === 0) {
-            container.innerHTML = `
-                <div class="empty-tab-message">
-                    <p>No tasks have been removed from sorting.</p>
-                    <p class="empty-tab-hint">Tasks removed during sorting will appear here.</p>
-                </div>
-            `;
-            return;
-        }
-
-        // Add back to sorting button
+        // Always add back to sorting button first
         const backToSortingDiv = document.createElement('div');
         backToSortingDiv.className = 'back-to-sorting-section';
         
         // Check if sorting is complete (no more tasks to sort)
-        const sortingComplete = this.state.sortState.done;
+        const hasTasksToSort = this.state.sortState.unSorted.length > 0 || this.state.sortState.currentItem !== null;
+        const sortingComplete = this.state.sortState.done && !hasTasksToSort;
+        
+
+        
         const buttonClass = sortingComplete ? 'back-to-sorting-btn disabled' : 'back-to-sorting-btn';
         const buttonText = sortingComplete ? '✓ Sorting Complete' : '← Back to Sorting';
         const hintText = sortingComplete ? 'All tasks have been sorted' : 'Continue sorting tasks or restore removed tasks below';
@@ -399,6 +393,18 @@ class UITabs {
             <p class="back-to-sorting-hint">${hintText}</p>
         `;
         container.appendChild(backToSortingDiv);
+
+        // If no removed tasks, show empty message and return
+        if (this.state.removedTasks.size === 0) {
+            const emptyMessage = document.createElement('div');
+            emptyMessage.className = 'empty-tab-message';
+            emptyMessage.innerHTML = `
+                <p>No tasks have been removed from sorting.</p>
+                <p class="empty-tab-hint">Tasks removed during sorting will appear here.</p>
+            `;
+            container.appendChild(emptyMessage);
+            return;
+        }
 
         // Group removed tasks by assignee
         const removedAssigneeGroups = new Map();
