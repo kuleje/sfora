@@ -7,6 +7,9 @@ class UITabs {
         this.uiQuarterly = uiQuarterly;
         this.rankingStyle = 'range'; // Default value
         this.lastSelectedTabKey = 'taskSorter_lastSelectedTab';
+        
+        // Initialize shared assignee color manager
+        this.assigneeColorManager = new AssigneeColorManager();
     }
 
     // Set ranking style
@@ -300,6 +303,13 @@ class UITabs {
             
             const header = document.createElement('h3');
             header.className = 'assignee-header';
+            
+            // Apply assignee color
+            const assigneeColor = this.assigneeColorManager.getAssigneeColor(assignee);
+            const textColor = this.assigneeColorManager.getTextColorForBackground(assigneeColor);
+            header.style.backgroundColor = assigneeColor;
+            header.style.color = textColor;
+            
             header.innerHTML = `
                 ${assignee === 'Unassigned' ? '❓' : '👤'} ${assignee} 
                 <span class="task-count">(${assigneeGroups.get(assignee).length} task${assigneeGroups.get(assignee).length !== 1 ? 's' : ''})</span>
