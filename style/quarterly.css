@@ -217,6 +217,60 @@
     background-color: #0056b3;
 }
 
+.grouping-toggle {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background-color: white;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+}
+
+.grouping-toggle-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.grouping-toggle-label {
+    font-weight: 500;
+    color: #495057;
+    font-size: 0.9em;
+}
+
+.grouping-toggle-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.grouping-toggle-btn {
+    padding: 0.5rem 1rem;
+    border: 1px solid #dee2e6;
+    background-color: #f8f9fa;
+    color: #6c757d;
+    border-radius: 4px;
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.grouping-toggle-btn:hover {
+    background-color: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.grouping-toggle-btn.active {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.grouping-toggle-btn.active:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
 .quarterly-instructions {
     color: #6c757d;
     font-style: italic;

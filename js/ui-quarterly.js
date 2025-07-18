@@ -7,6 +7,7 @@ class UIQuarterly {
         this.quarterlyStatus = new QuarterlyStatus();
         this.collapsedStateKey = 'taskSorter_collapsedQuarters';
         this.collapsedAssigneeStateKey = 'taskSorter_collapsedAssignees';
+        this.groupingModeKey = 'taskSorter_quarterlyGroupingMode';
     }
 
     // Save collapsed state to localStorage
@@ -93,6 +94,25 @@ class UIQuarterly {
         return collapsedAssignees.includes(key);
     }
 
+    // Save grouping mode to localStorage
+    saveGroupingMode(mode) {
+        try {
+            localStorage.setItem(this.groupingModeKey, mode);
+        } catch (error) {
+            this.log(`Error saving grouping mode: ${error.message}`);
+        }
+    }
+
+    // Load grouping mode from localStorage
+    loadGroupingMode() {
+        try {
+            return localStorage.getItem(this.groupingModeKey) || 'quarter-assignee';
+        } catch (error) {
+            this.log(`Error loading grouping mode: ${error.message}`);
+            return 'quarter-assignee';
+        }
+    }
+
     // Render quarterly status interface in tab
     renderQuarterlyStatusInTab(container) {
         // Create the quarterly status interface
@@ -166,12 +186,34 @@ class UIQuarterly {
         // Create results section
         const resultsSection = document.createElement('div');
         resultsSection.className = 'quarterly-results';
-        resultsSection.innerHTML = `
-            <p class="quarterly-instructions">
-                Configure the number of tasks for each status above, then click "Apply Quarterly Status" to distribute tasks.
-                Tasks will be grouped by assignee and distributed based on their priority ranking.
-            </p>
+        
+        // Add grouping toggle
+        const groupingToggle = document.createElement('div');
+        groupingToggle.className = 'grouping-toggle';
+        const currentMode = this.loadGroupingMode();
+        groupingToggle.innerHTML = `
+            <div class="grouping-toggle-header">
+                <span class="grouping-toggle-label">Group by:</span>
+                <div class="grouping-toggle-buttons">
+                    <button class="grouping-toggle-btn ${currentMode === 'quarter-assignee' ? 'active' : ''}" data-mode="quarter-assignee">
+                        Quarter → Assignee
+                    </button>
+                    <button class="grouping-toggle-btn ${currentMode === 'assignee-quarter' ? 'active' : ''}" data-mode="assignee-quarter">
+                        Assignee → Quarter
+                    </button>
+                </div>
+            </div>
         `;
+        
+        resultsSection.appendChild(groupingToggle);
+        
+        const instructionsDiv = document.createElement('div');
+        instructionsDiv.className = 'quarterly-instructions';
+        instructionsDiv.innerHTML = `
+            <p>Configure the number of tasks for each status above, then click "Apply Quarterly Status" to distribute tasks.
+            Tasks will be grouped by assignee and distributed based on their priority ranking.</p>
+        `;
+        resultsSection.appendChild(instructionsDiv);
         
         quarterlyContainer.appendChild(statusManagementSection);
         quarterlyContainer.appendChild(resultsSection);
@@ -186,6 +228,7 @@ class UIQuarterly {
         const applyBtn = document.getElementById('apply-quarterly-btn');
         const addNewQuarterBtn = document.getElementById('add-new-quarter-btn');
         const existingStatusesSection = document.getElementById('existing-statuses');
+        const groupingToggle = document.querySelector('.grouping-toggle');
         
         if (applyBtn) {
             applyBtn.addEventListener('click', () => {
@@ -211,6 +254,25 @@ class UIQuarterly {
             existingStatusesSection.addEventListener('change', (e) => {
                 if (e.target.classList.contains('tasks-count-input')) {
                     // Auto-apply when task counts change
+                    this.applyQuarterlyStatus();
+                }
+            });
+        }
+        
+        // Add event listener for grouping toggle
+        if (groupingToggle) {
+            groupingToggle.addEventListener('click', (e) => {
+                if (e.target.classList.contains('grouping-toggle-btn')) {
+                    const mode = e.target.getAttribute('data-mode');
+                    this.saveGroupingMode(mode);
+                    
+                    // Update button states
+                    groupingToggle.querySelectorAll('.grouping-toggle-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    e.target.classList.add('active');
+                    
+                    // Re-render the results if they exist
                     this.applyQuarterlyStatus();
                 }
             });
@@ -295,11 +357,58 @@ class UIQuarterly {
     
     // Render quarterly distribution
     renderQuarterlyDistribution(container, distribution) {
-        container.innerHTML = '';
+        // Find and preserve the grouping toggle
+        const existingToggle = container.querySelector('.grouping-toggle');
+        const existingInstructions = container.querySelector('.quarterly-instructions');
+        
+        // Clear only the distribution and export sections
+        const existingDistribution = container.querySelector('.quarterly-distribution');
+        const existingExport = container.querySelector('.quarterly-export');
+        
+        if (existingDistribution) {
+            existingDistribution.remove();
+        }
+        if (existingExport) {
+            existingExport.remove();
+        }
         
         const distributionDiv = document.createElement('div');
         distributionDiv.className = 'quarterly-distribution';
         
+        const groupingMode = this.loadGroupingMode();
+        
+        if (groupingMode === 'assignee-quarter') {
+            this.renderAssigneeQuarterDistribution(distributionDiv, distribution);
+        } else {
+            this.renderQuarterAssigneeDistribution(distributionDiv, distribution);
+        }
+        
+        // Insert the distribution after the instructions
+        if (existingInstructions) {
+            existingInstructions.insertAdjacentElement('afterend', distributionDiv);
+        } else {
+            container.appendChild(distributionDiv);
+        }
+        
+        // Add export button
+        const exportDiv = document.createElement('div');
+        exportDiv.className = 'quarterly-export';
+        exportDiv.innerHTML = `
+            <button id="export-quarterly-btn" class="export-quarterly-btn">Export with Quarterly Status</button>
+        `;
+        container.appendChild(exportDiv);
+        
+        // Add export event listener
+        const exportBtn = document.getElementById('export-quarterly-btn');
+        if (exportBtn) {
+            exportBtn.addEventListener('click', () => {
+                this.exportQuarterlyStatus(distribution);
+            });
+        }
+    }
+    
+    // Render Quarter → Assignee distribution (original layout)
+    renderQuarterAssigneeDistribution(distributionDiv, distribution) {
         // Render each quarter
         distribution.forEach((quarterData, quarterName) => {
             const quarterDiv = document.createElement('div');
@@ -452,9 +561,12 @@ class UIQuarterly {
             distributionDiv.appendChild(quarterDiv);
         });
         
-        container.appendChild(distributionDiv);
-        
         // Add click event listeners for collapsible quarters and assignees
+        this.addCollapsibleEventListeners(distributionDiv);
+    }
+    
+    // Add collapsible event listeners (shared between both rendering modes)
+    addCollapsibleEventListeners(distributionDiv) {
         distributionDiv.addEventListener('click', (e) => {
             // Handle quarter collapsing
             if (e.target.classList.contains('quarter-title-clickable') || e.target.closest('.quarter-title-clickable')) {
@@ -550,22 +662,175 @@ class UIQuarterly {
                 }
             }
         });
+    }
+    
+    // Render Assignee → Quarter distribution (new layout)
+    renderAssigneeQuarterDistribution(distributionDiv, distribution) {
+        // First, collect all tasks by assignee across all quarters
+        const tasksByAssignee = new Map();
         
-        // Add export button
-        const exportDiv = document.createElement('div');
-        exportDiv.className = 'quarterly-export';
-        exportDiv.innerHTML = `
-            <button id="export-quarterly-btn" class="export-quarterly-btn">Export with Quarterly Status</button>
-        `;
-        container.appendChild(exportDiv);
-        
-        // Add export event listener
-        const exportBtn = document.getElementById('export-quarterly-btn');
-        if (exportBtn) {
-            exportBtn.addEventListener('click', () => {
-                this.exportQuarterlyStatus(distribution);
+        distribution.forEach((quarterData, quarterName) => {
+            quarterData.tasks.forEach(task => {
+                const assignee = task.assignee;
+                if (!tasksByAssignee.has(assignee)) {
+                    tasksByAssignee.set(assignee, new Map());
+                }
+                if (!tasksByAssignee.get(assignee).has(quarterName)) {
+                    tasksByAssignee.get(assignee).set(quarterName, []);
+                }
+                tasksByAssignee.get(assignee).get(quarterName).push({
+                    ...task,
+                    quarterData: quarterData
+                });
             });
-        }
+        });
+        
+        // Sort assignees (Unassigned last)
+        const sortedAssignees = Array.from(tasksByAssignee.keys()).sort((a, b) => {
+            if (a === 'Unassigned') return 1;
+            if (b === 'Unassigned') return -1;
+            return a.localeCompare(b);
+        });
+        
+        // Render each assignee
+        sortedAssignees.forEach(assignee => {
+            const assigneeDiv = document.createElement('div');
+            assigneeDiv.className = 'quarter-section'; // Use same styling as quarters
+            assigneeDiv.style.borderLeft = `4px solid #6c757d`;
+            
+            const isAssigneeCollapsed = this.isAssigneeCollapsed('assignee-view', assignee);
+            const chevronIcon = isAssigneeCollapsed ? '▶' : '▼';
+            
+            const assigneeHeader = document.createElement('div');
+            assigneeHeader.className = 'quarter-header';
+            assigneeHeader.innerHTML = `
+                <h3 class="quarter-title quarter-title-colored quarter-title-clickable" style="background-color: #6c757d; color: white" data-quarter="assignee-view" data-assignee="${assignee}">
+                    <span class="quarter-chevron" style="transform: rotate(${isAssigneeCollapsed ? '-90deg' : '0deg'})">${chevronIcon}</span>
+                    ${assignee === 'Unassigned' ? '❓' : '👤'} ${assignee}
+                    <span class="quarter-count">(${Array.from(tasksByAssignee.get(assignee).values()).flat().length} tasks)</span>
+                </h3>
+            `;
+            
+            assigneeDiv.appendChild(assigneeHeader);
+            
+            // Create content container
+            const assigneeContent = document.createElement('div');
+            assigneeContent.className = 'quarter-content';
+            if (isAssigneeCollapsed) {
+                assigneeContent.style.height = '0px';
+                assigneeContent.style.opacity = '0';
+            }
+            
+            // Render quarters within this assignee
+            const assigneeQuarters = tasksByAssignee.get(assignee);
+            Array.from(assigneeQuarters.keys()).forEach(quarterName => {
+                const quarterTasks = assigneeQuarters.get(quarterName);
+                const quarterData = quarterTasks[0].quarterData;
+                
+                const isQuarterCollapsed = this.isQuarterCollapsed(assignee, quarterName);
+                const quarterChevronIcon = isQuarterCollapsed ? '▶' : '▼';
+                
+                const quarterGroupDiv = document.createElement('div');
+                quarterGroupDiv.className = 'assignee-group-quarterly';
+                
+                const quarterSubHeader = document.createElement('div');
+                quarterSubHeader.className = 'assignee-header-quarterly assignee-header-clickable';
+                quarterSubHeader.setAttribute('data-quarter', assignee);
+                quarterSubHeader.setAttribute('data-assignee', quarterName);
+                quarterSubHeader.innerHTML = `
+                    <span class="assignee-chevron" style="transform: rotate(${isQuarterCollapsed ? '-90deg' : '0deg'})">${quarterChevronIcon}</span>
+                    <span class="status-name-colored" style="background-color: ${quarterData.color}; color: ${this.quarterlyStatus.getTextColor(quarterData.color)}">${quarterName.toUpperCase()}</span>
+                    <span class="assignee-count">(${quarterTasks.length} tasks)</span>
+                `;
+                
+                quarterGroupDiv.appendChild(quarterSubHeader);
+                
+                const tasksList = document.createElement('div');
+                tasksList.className = 'tasks-list-quarterly';
+                if (isQuarterCollapsed) {
+                    tasksList.style.height = '0px';
+                    tasksList.style.opacity = '0';
+                }
+                
+                quarterTasks.forEach(task => {
+                    const taskDiv = document.createElement('div');
+                    taskDiv.className = 'task-item-quarterly';
+                    
+                    // Find the global group this task belongs to and check if it's tied
+                    const globalGroupId = this.state.sortState.sortedGroups.find(groupId => {
+                        const tasks = this.state.rankGroups.get(groupId);
+                        return tasks.includes(task.id);
+                    });
+                    
+                    const globalTasks = this.state.rankGroups.get(globalGroupId) || [];
+                    const isTied = globalTasks.length > 1;
+                    const tiedClass = isTied ? ' tied' : '';
+                    
+                    // Calculate rank display
+                    const globalRankIndex = this.state.sortState.sortedGroups.indexOf(globalGroupId);
+                    let currentRank = 1;
+                    for (let i = 0; i < globalRankIndex; i++) {
+                        const prevGroupId = this.state.sortState.sortedGroups[i];
+                        const prevTasks = this.state.rankGroups.get(prevGroupId) || [];
+                        currentRank += prevTasks.length;
+                    }
+                    
+                    const rankingStyle = window.uiRenderer ? window.uiRenderer.rankingStyle : 'range';
+                    let rankDisplay;
+                    
+                    switch (rankingStyle) {
+                        case 'range':
+                            if (globalTasks.length === 1) {
+                                rankDisplay = currentRank.toString();
+                            } else {
+                                const endRank = currentRank + globalTasks.length - 1;
+                                rankDisplay = `${currentRank}-${endRank}`;
+                            }
+                            break;
+                        case 'standard':
+                            rankDisplay = currentRank.toString();
+                            break;
+                        case 'modified':
+                            rankDisplay = currentRank.toString();
+                            break;
+                        case 'ordinal':
+                            const getOrdinal = (n) => {
+                                const s = ["th", "st", "nd", "rd"];
+                                const v = n % 100;
+                                return n + (s[(v - 20) % 10] || s[v] || s[0]);
+                            };
+                            rankDisplay = getOrdinal(currentRank);
+                            break;
+                        case 'fractional':
+                            if (globalTasks.length === 1) {
+                                rankDisplay = currentRank.toString();
+                            } else {
+                                const endRank = currentRank + globalTasks.length - 1;
+                                const fractionalRank = (currentRank + endRank) / 2;
+                                rankDisplay = fractionalRank.toString();
+                            }
+                            break;
+                        default:
+                            rankDisplay = currentRank.toString();
+                    }
+                    
+                    taskDiv.innerHTML = `
+                        <span class="task-rank${tiedClass}">${rankDisplay}</span>
+                        <span class="task-name">${task.name}</span>
+                    `;
+                    tasksList.appendChild(taskDiv);
+                });
+                
+                quarterGroupDiv.appendChild(tasksList);
+                assigneeContent.appendChild(quarterGroupDiv);
+            });
+            
+            assigneeDiv.appendChild(assigneeContent);
+            distributionDiv.appendChild(assigneeDiv);
+        });
+        
+        // Add click event listeners for collapsible assignees and quarters
+        this.addCollapsibleEventListeners(distributionDiv);
     }
     
     // Export quarterly status
