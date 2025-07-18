@@ -8,6 +8,35 @@ class UIQuarterly {
         this.collapsedStateKey = 'taskSorter_collapsedQuarters';
         this.collapsedAssigneeStateKey = 'taskSorter_collapsedAssignees';
         this.groupingModeKey = 'taskSorter_quarterlyGroupingMode';
+        
+        // Color palette for assignees - professional muted tones recommended by Gemini
+        // These colors complement quarterly colors and work well in business contexts
+        this.assigneeColorPalette = [
+            // Light colors (work with dark text)
+            '#A8DADC', // Pale Aqua
+            '#F1C0B9', // Dusty Rose
+            '#E8DAB2', // Light Khaki
+            '#C5D8B9', // Sage Green
+            '#D3C0E1', // Muted Lavender
+            '#FDDDA0', // Pale Gold
+            '#B4D2E7', // Light Sky Blue
+            '#F7BCA0', // Soft Apricot
+            // Darker colors (work with light text)
+            '#457B9D', // Cerulean Blue
+            '#E63946', // Imperial Red
+            '#1D3557', // Prussian Blue
+            '#588157', // Forest Green
+            '#8338EC', // Royal Purple
+            '#B56576', // Muted Berry
+            '#3D405B', // Charcoal Blue
+            '#785A3E', // Rich Taupe
+            '#006D77', // Deep Teal
+            '#D4A373'  // Muted Ochre
+        ];
+        
+        // Sequential assignee color mapping
+        this.assigneeColorMap = new Map();
+        this.assigneeOrder = [];
     }
 
     // Save collapsed state to localStorage
@@ -111,6 +140,37 @@ class UIQuarterly {
             this.log(`Error loading grouping mode: ${error.message}`);
             return 'quarter-assignee';
         }
+    }
+
+    // Get color for assignee based on sequential assignment
+    getAssigneeColor(assigneeName) {
+        if (assigneeName === 'Unassigned') {
+            return '#95a5a6'; // Gray for unassigned
+        }
+        
+        // If we haven't seen this assignee before, assign the next color sequentially
+        if (!this.assigneeColorMap.has(assigneeName)) {
+            this.assigneeOrder.push(assigneeName);
+            const colorIndex = (this.assigneeOrder.length - 1) % this.assigneeColorPalette.length;
+            this.assigneeColorMap.set(assigneeName, this.assigneeColorPalette[colorIndex]);
+        }
+        
+        return this.assigneeColorMap.get(assigneeName);
+    }
+
+    // Get text color (light/dark) based on background color
+    getTextColorForBackground(backgroundColor) {
+        // Remove # and convert to RGB
+        const hex = backgroundColor.replace('#', '');
+        const r = parseInt(hex.substr(0, 2), 16);
+        const g = parseInt(hex.substr(2, 2), 16);
+        const b = parseInt(hex.substr(4, 2), 16);
+        
+        // Calculate luminance
+        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        
+        // Return white for dark backgrounds, black for light backgrounds
+        return luminance > 0.5 ? '#000000' : '#ffffff';
     }
 
     // Render quarterly status interface in tab
@@ -463,11 +523,15 @@ class UIQuarterly {
                 
                 const isAssigneeCollapsed = this.isAssigneeCollapsed(quarterName, assignee);
                 const chevronIcon = isAssigneeCollapsed ? '▶' : '▼';
+                const assigneeColor = this.getAssigneeColor(assignee);
+                const textColor = this.getTextColorForBackground(assigneeColor);
                 
                 const assigneeHeader = document.createElement('div');
                 assigneeHeader.className = 'assignee-header-quarterly assignee-header-clickable';
                 assigneeHeader.setAttribute('data-quarter', quarterName);
                 assigneeHeader.setAttribute('data-assignee', assignee);
+                assigneeHeader.style.backgroundColor = assigneeColor;
+                assigneeHeader.style.color = textColor;
                 assigneeHeader.innerHTML = `
                     <span class="assignee-chevron" style="transform: rotate(${isAssigneeCollapsed ? '-90deg' : '0deg'})">${chevronIcon}</span>
                     ${assignee === 'Unassigned' ? '❓' : '👤'} ${assignee}
@@ -696,7 +760,10 @@ class UIQuarterly {
         sortedAssignees.forEach(assignee => {
             const assigneeDiv = document.createElement('div');
             assigneeDiv.className = 'quarter-section'; // Use same styling as quarters
-            assigneeDiv.style.borderLeft = `4px solid #6c757d`;
+            
+            const assigneeColor = this.getAssigneeColor(assignee);
+            const textColor = this.getTextColorForBackground(assigneeColor);
+            assigneeDiv.style.borderLeft = `4px solid ${assigneeColor}`;
             
             const isAssigneeCollapsed = this.isAssigneeCollapsed('assignee-view', assignee);
             const chevronIcon = isAssigneeCollapsed ? '▶' : '▼';
@@ -704,7 +771,7 @@ class UIQuarterly {
             const assigneeHeader = document.createElement('div');
             assigneeHeader.className = 'quarter-header';
             assigneeHeader.innerHTML = `
-                <h3 class="quarter-title quarter-title-colored quarter-title-clickable" style="background-color: #6c757d; color: white" data-quarter="assignee-view" data-assignee="${assignee}">
+                <h3 class="quarter-title quarter-title-colored quarter-title-clickable" style="background-color: ${assigneeColor}; color: ${textColor}" data-quarter="assignee-view" data-assignee="${assignee}">
                     <span class="quarter-chevron" style="transform: rotate(${isAssigneeCollapsed ? '-90deg' : '0deg'})">${chevronIcon}</span>
                     ${assignee === 'Unassigned' ? '❓' : '👤'} ${assignee}
                     <span class="quarter-count">(${Array.from(tasksByAssignee.get(assignee).values()).flat().length} tasks)</span>
