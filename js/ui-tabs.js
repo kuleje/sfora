@@ -6,11 +6,31 @@ class UITabs {
         this.log = logger;
         this.uiQuarterly = uiQuarterly;
         this.rankingStyle = 'range'; // Default value
+        this.lastSelectedTabKey = 'taskSorter_lastSelectedTab';
     }
 
     // Set ranking style
     setRankingStyle(style) {
         this.rankingStyle = style;
+    }
+
+    // Save selected tab to localStorage
+    saveSelectedTab(tabName) {
+        try {
+            localStorage.setItem(this.lastSelectedTabKey, tabName);
+        } catch (error) {
+            this.log(`Error saving selected tab: ${error.message}`);
+        }
+    }
+
+    // Load selected tab from localStorage
+    loadSelectedTab() {
+        try {
+            return localStorage.getItem(this.lastSelectedTabKey);
+        } catch (error) {
+            this.log(`Error loading selected tab: ${error.message}`);
+            return null;
+        }
     }
 
     // Helper method to get range display for tied tasks
@@ -83,11 +103,21 @@ class UITabs {
         removedTasksTab.textContent = `Removed Tasks (${this.state.removedTasks.size})`;
         removedTasksTab.setAttribute('data-tab', 'removed-tasks');
         
-        // Set initial active tab based on groupByAssignee parameter
-        if (groupByAssignee) {
-            byAssigneeTab.classList.add('active');
-        } else {
-            allTasksTab.classList.add('active');
+        // Set initial active tab based on persisted selection or groupByAssignee parameter
+        const savedTab = this.loadSelectedTab();
+        let initialTab = 'all-tasks';
+        
+        if (savedTab && [allTasksTab, byAssigneeTab, quarterlyStatusTab, removedTasksTab].find(tab => tab.getAttribute('data-tab') === savedTab)) {
+            initialTab = savedTab;
+        } else if (groupByAssignee) {
+            initialTab = 'by-assignee';
+        }
+        
+        // Set active tab button
+        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+        const activeButton = [allTasksTab, byAssigneeTab, quarterlyStatusTab, removedTasksTab].find(tab => tab.getAttribute('data-tab') === initialTab);
+        if (activeButton) {
+            activeButton.classList.add('active');
         }
         
         tabButtons.appendChild(allTasksTab);
@@ -135,13 +165,15 @@ class UITabs {
                 });
                 e.target.classList.add('active');
                 
+                // Save selected tab to localStorage
+                this.saveSelectedTab(targetTab);
+                
                 // Render content for selected tab
                 renderTabContent(targetTab);
             }
         });
         
         // Render initial content
-        const initialTab = groupByAssignee ? 'by-assignee' : 'all-tasks';
         renderTabContent(initialTab);
     }
 
