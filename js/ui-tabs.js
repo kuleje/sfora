@@ -426,7 +426,14 @@ class UITabs {
             groupDiv.className = 'assignee-group removed-assignee-group';
             
             const header = document.createElement('h3');
-            header.className = 'assignee-header removed-assignee-header';
+            header.className = 'assignee-header';
+            
+            // Apply assignee color
+            const assigneeColor = this.assigneeColorManager.getAssigneeColor(assignee);
+            const textColor = this.assigneeColorManager.getTextColorForBackground(assigneeColor);
+            header.style.backgroundColor = assigneeColor;
+            header.style.color = textColor;
+            
             header.innerHTML = `
                 ${assignee === 'Unassigned' ? '❓' : '👤'} ${assignee} 
                 <span class="task-count">(${removedAssigneeGroups.get(assignee).length} removed task${removedAssigneeGroups.get(assignee).length !== 1 ? 's' : ''})</span>
@@ -441,9 +448,11 @@ class UITabs {
                 const li = document.createElement('li');
                 li.innerHTML = `
                     <span class="removed-badge">REMOVED</span>
-                    <div class="task-meta">
-                        <span class="task-name-result">${task.data[this.state.columnMapping.name] || 'Unnamed task'}</span>
-                        ${comment ? `<div class="task-comment-preview">${comment}</div>` : ''}
+                    <div class="task-content-assignee">
+                        <div class="task-meta-assignee">
+                            <div class="task-name-portion">${task.data[this.state.columnMapping.name] || 'Unnamed task'}</div>
+                            <div class="task-comment-preview">${comment || ''}</div>
+                        </div>
                     </div>
                     <button class="restore-task-btn" data-task-id="${task.id}">Restore</button>
                 `;
